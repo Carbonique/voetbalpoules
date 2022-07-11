@@ -27,6 +27,33 @@ type Wedstrijd struct {
 	UitDoelpuntenMaker   string
 }
 
+// GetWedstrijden returns Wedstrijden for a Competitie that fall within a specified timerange
+func (w *WedstrijdService) Get(competitie string, t1 time.Time, t2 time.Time) string {
+	var wedstrijd string
+	w.OnHTML("table.wedstrijden", func(wedstrijdenTabel *colly.HTMLElement) {
+		rij := "tr:not(:first-child)"
+		wedstrijdenTabel.ForEachWithBreak(rij, func(_ int, r *colly.HTMLElement) bool {
+			wedstrijd, err := NaarWedstrijd(r)
+
+			if err != nil {
+				log.Panic("GetWedstrijden: error in NaarWedstrijd()")
+			}
+			if wedstrijd == nil {
+				//continue
+				return true
+			}
+
+			return true
+		})
+
+	})
+
+	url := fmt.Sprintf("%swedstrijd/index/%s", w.baseURL, competitie)
+	w.Visit(url)
+
+	return wedstrijd
+}
+
 func isWedstrijdRij(e *colly.HTMLElement) (b bool) {
 	//Dit is geen briljant criterium, een losse cel met alleen '.vp-team' zou nu ook als wedstrijdRij gezien worden
 	return e.ChildText(".vp-team") != ""

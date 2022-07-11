@@ -4,17 +4,16 @@ import "github.com/gocolly/colly/v2"
 
 //A client that manages communication with Voetbalpoules
 type Client struct {
-	scraper *colly.Collector
-	BaseURL string
+	*colly.Collector
+	baseURL string
 
-	Competitie *CompetitieService
-	Wedstrijd  *WedstrijdService
-	Pool       *PoolService
-	Deelnemer  *DeelnemerService
+	Wedstrijden *WedstrijdService
+	Pool        *PoolService
+	Deelnemer   *DeelnemerService
 }
 
 type service struct {
-	client *Client
+	*Client
 }
 
 //Creates a new Scraper instance
@@ -23,10 +22,12 @@ func NewClient(url string) *Client {
 		colly.AllowURLRevisit(),
 	)
 
-	c := &Client{scraper: col, BaseURL: url}
+	c := &Client{
+		Collector: col,
+		baseURL:   url}
 
 	c.Competitie = &CompetitieService{c}
-	c.Wedstrijd = &WedstrijdService{c}
+	c.Wedstrijden = &WedstrijdService{c}
 	c.Pool = &PoolService{c}
 	c.Deelnemer = &DeelnemerService{c}
 
