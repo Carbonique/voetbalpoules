@@ -2,12 +2,7 @@ module github.com/Carbonique/voetbalpoules-messenger
 
 go 1.18
 
-require github.com/gocolly/colly v1.2.0
-
-require (
-	github.com/Carbonique/voetbalpoules-messenger v0.0.0-20220710154546-a807d84ac761 // indirect
-	google.golang.org/protobuf v1.24.0 // indirect
-)
+require google.golang.org/protobuf v1.24.0 // indirect
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.0 // indirect
