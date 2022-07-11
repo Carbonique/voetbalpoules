@@ -26,7 +26,6 @@ func NewClient(url string) *Client {
 		Collector: col,
 		baseURL:   url}
 
-	c.Competitie = &CompetitieService{c}
 	c.Wedstrijden = &WedstrijdService{c}
 	c.Pool = &PoolService{c}
 	c.Deelnemer = &DeelnemerService{c}
