@@ -1,4 +1,4 @@
-package main
+package voetbalpoules
 
 import (
 	"fmt"
@@ -8,10 +8,13 @@ import (
 	"github.com/gocolly/colly/v2"
 )
 
-// GetWedstrijden returns Wedstrijden for a Competitie that fall within a specified timerange
-func (s *Scraper) GetWedstrijden(competitie string, t1 time.Time, t2 time.Time) string {
+//CompetitieService handles communication related to Competities
+type CompetitieService service
 
-	s.OnHTML("table.wedstrijden", func(wedstrijdenTabel *colly.HTMLElement) {
+// GetWedstrijden returns Wedstrijden for a Competitie that fall within a specified timerange
+func (w *WedstrijdService) GetWedstrijden(competitie string, t1 time.Time, t2 time.Time) string {
+
+	w.OnHTML("table.wedstrijden", func(wedstrijdenTabel *colly.HTMLElement) {
 
 		rij := "tr:not(:first-child)"
 		wedstrijdenTabel.ForEachWithBreak(rij, func(_ int, r *colly.HTMLElement) bool {
@@ -30,8 +33,8 @@ func (s *Scraper) GetWedstrijden(competitie string, t1 time.Time, t2 time.Time) 
 
 	})
 
-	url := fmt.Sprintf("%swedstrijd/index/%s", s.url, competitie)
-	s.Visit(url)
+	url := fmt.Sprintf("%swedstrijd/index/%s", w.url, competitie)
+	w.Visit(url)
 
 	return "ja"
 }

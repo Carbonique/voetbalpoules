@@ -1,4 +1,4 @@
-package main
+package voetbalpoules
 
 import (
 	"fmt"
@@ -7,6 +7,9 @@ import (
 
 	"github.com/gocolly/colly/v2"
 )
+
+//WedstrijdService handles communication related to Wedstrijden
+type WedstrijdService service
 
 type wedstrijdRij struct {
 	*colly.HTMLElement
@@ -25,7 +28,6 @@ type Wedstrijd struct {
 }
 
 func isWedstrijdRij(e *colly.HTMLElement) (b bool) {
-
 	//Dit is geen briljant criterium, een losse cel met alleen '.vp-team' zou nu ook als wedstrijdRij gezien worden
 	return e.ChildText(".vp-team") != ""
 
@@ -48,30 +50,30 @@ func NaarWedstrijd(e *colly.HTMLElement) (w *Wedstrijd, err error) {
 
 }
 
-////datum extracts the date from a wedstrijdRij
-//func (r *wedstrijdRij) datum() (t time.Time, err error) {
-//
-//	cel, err := r.datumCel()
-//  if err != nil {
-//		return nil, fmt.Errorf("datum: failed parsing %w", err)
-//
-//	return t
-//}
-//
-////datumCel extracts the cel containing a date from a wedstrijdRij
-//func (r *wedstrijdRij) datumCel() (s string, err error) {
-//	cel := r.ChildText("td.nowrap:first-child")
-//
-//
-//
-//
-//	strings.Fields(rij.c)
-////	cel := strings.Fields(rij.ChildText("td.nowrap:first-child"))
-//
-//	return s
-//}
-//
-//
+//datum extracts the date from a wedstrijdRij
+func (r *wedstrijdRij) datum() (t time.Time, err error) {
+
+	cel, err := r.datumCel()
+	if err != nil {
+		return t, fmt.Errorf("datum: failed parsing %w", err)
+
+	}
+	fmt.Println(cel)
+	return t, err
+}
+
+//datumCel extracts the cel containing a date from a wedstrijdRij
+func (r *wedstrijdRij) datumCel() (s string, err error) {
+	cel := r.ChildText("td.nowrap:first-child")
+
+	if cel == "" {
+		return "", fmt.Errorf("datum: failed parsing %w", err)
+	}
+
+	return cel, err
+
+}
+
 ////NewWedstrijd maakt een wedstrijd struct op basis van ingevoerde info
 //func NewWedstrijd(datum time.Time, competitie string, ronde string, thuisTeam string, uitTeam string, wvdw bool, thuisDoelpuntenMaker string, uitDoelpuntenMaker string) (w *Wedstrijd, err error) {
 //

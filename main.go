@@ -4,6 +4,8 @@ import "time"
 
 func main() {
 
+	client := NewClient
+
 	s := NewScraper(
 		"https://www.voetbalpoules.nl/",
 	)

@@ -1,5 +1,7 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/Carbonique/voetbalpoules-messenger v0.0.0-20220710154546-a807d84ac761 h1:HDnhMyJlWtp1uUZWpl/kLshUGtAMkRkeySFvNyLVFdg=
+github.com/Carbonique/voetbalpoules-messenger v0.0.0-20220710154546-a807d84ac761/go.mod h1:SwA1IojiHT46gQOexp1OnmyDdxbLZFefOoTUvYmC0cE=
 github.com/PuerkitoBio/goquery v1.5.1/go.mod h1:GsLWisAFVj4WgDibEWF4pvYnkVQBpKBKeU+7zCJoLcc=
 github.com/PuerkitoBio/goquery v1.8.0 h1:PJTF7AmFCFKk1N6V6jmKfrNH9tV5pNE6lZMkG0gta/U=
 github.com/PuerkitoBio/goquery v1.8.0/go.mod h1:ypIiRMtY7COPGk+I/YbZLbxsxn9g5ejnI2HSMtkjZvI=
