@@ -1,11 +1,16 @@
 package voetbalpoules
 
-import "github.com/gocolly/colly/v2"
+import (
+	"time"
+
+	"github.com/gocolly/colly/v2"
+)
 
 //A client that manages communication with Voetbalpoules
 type Client struct {
 	*colly.Collector
 	baseURL string
+	Time    time.Time
 
 	Wedstrijden *WedstrijdService
 	Pool        *PoolService
@@ -25,6 +30,8 @@ func NewClient(url string) *Client {
 	c := &Client{
 		Collector: col,
 		baseURL:   url + "/"}
+
+	c.Time = time.Now()
 
 	c.Wedstrijden = &WedstrijdService{c}
 	c.Pool = &PoolService{c}

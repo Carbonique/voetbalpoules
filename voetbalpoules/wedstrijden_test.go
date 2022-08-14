@@ -1,7 +1,6 @@
 package voetbalpoules
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,7 +17,7 @@ func TestGet(t *testing.T) {
 	t1 := time.Date(2022, 1, 1, 0, 0, 0, 0, time.Local)
 	t2 := t1.AddDate(0, 0, 360)
 	w := client.Wedstrijden.Get("ek_vrouwen_2022", t1, t2)
-	fmt.Println(w)
+
 }
 
 func newTestServer() *httptest.Server {

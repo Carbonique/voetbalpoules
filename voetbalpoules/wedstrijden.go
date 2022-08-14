@@ -14,14 +14,9 @@ import (
 //WedstrijdService handles communication related to Wedstrijden
 type WedstrijdService service
 
-type wedstrijdRij struct {
-	*colly.HTMLElement
-}
-
 type Wedstrijd struct {
 	Datum                time.Time
 	Competitie           string
-	Ronde                string
 	ThuisTeam            string
 	UitTeam              string
 	Uitslag              string
@@ -29,58 +24,93 @@ type Wedstrijd struct {
 	ThuisDoelpuntenMaker string
 	UitDoelpuntenMaker   string
 }
+type wedstrijdTabel struct {
+	*colly.HTMLElement
+}
 
 // GetWedstrijden returns Wedstrijden for a Competitie within a specified timerange
-func (w *WedstrijdService) Get(competitie string, t1 time.Time, t2 time.Time) []Wedstrijd {
+func (w *WedstrijdService) Get(competitie string, t1 time.Time, t2 time.Time) ([]Wedstrijd, error) {
 
 	var wedstrijden []Wedstrijd
-	fmt.Println("out")
-	w.OnHTML("table.wedstrijden", func(wedstrijdenTabel *colly.HTMLElement) {
-		fmt.Println("in")
-		rij := "tr:not(:first-child)"
-		wedstrijdenTabel.ForEach(rij, func(_ int, r *colly.HTMLElement) {
+	var wedstrijd Wedstrijd
 
-			//Maak een nieuwe wedstrijdRij aan, zodat we daar receiver methods op toe kunnen passen
-			wRij, err := newWedstrijdRij(r)
-			if err != nil {
-				return
+	// First fetch the wedstrijdTabel
+	t, err := w.getWedstrijdTabel(competitie)
+	if err != nil {
+		return []Wedstrijd{}, err
+	}
+	// Now loop through the wedstrijdTabel to get the wedstrijdRijen
+	wRijen := t.getWedstrijdRijen()
+	for i, rij := range wRijen {
+
+		datum, err := rij.datum()
+		if err != nil {
+			log.Debug("Error on getting datum from rij")
+			continue
+		}
+
+		if !inTimeSpan(t1, t2, datum) {
+			log.Infof("Found wedstrijd at %s, but is not within range %s - %s", datum.Format(time.RFC822), t1.Format(time.RFC822), t2.Format(time.RFC822))
+			continue
+		}
+
+		// Als wvdw dan voegen we een extra rij toe
+		rijen := []wedstrijdRij{rij}
+		if rij.DOM.HasClass("wvdw") {
+			if i+1 <= len(wRijen) {
+				rijen = append(rijen, wRijen[i+1])
 			}
-			datum, err := wRij.datum()
-			if err != nil {
-				log.Error("Error on datum")
-				return
-			}
+		}
 
-			if !inTimeSpan(t1, t2, datum) {
-				log.Debugf("Found wedstrijd at %s, but is not within range %s - %s", datum.Format(time.RFC822), t1.Format(time.RFC822), t2.Format(time.RFC822))
-				return
-			}
+		wedstrijd, err = NewWedstrijd(competitie, rijen...)
 
-			wedstrijd, err := NewWedstrijd(wRij, competitie, "ronde1")
+		if err != nil {
+			return []Wedstrijd{}, err
+		}
 
-			if err != nil {
-				log.Error("Error in getting wedstrijd")
-			}
-			if wedstrijd == nil {
-				log.Debug("Wedstrijd == nil")
-				//continue
-				return
-			}
+		wedstrijden = append(wedstrijden, wedstrijd)
 
-			wedstrijden = append(wedstrijden, *wedstrijd)
-		})
+	}
+	return wedstrijden, nil
+}
 
+//getWedstrijdTabel returns the wedstrijdTabel for a competitie
+func (w *WedstrijdService) getWedstrijdTabel(c string) (wedstrijdTabel, error) {
+	var elem colly.HTMLElement
+	w.OnHTML("table.wedstrijden", func(tabel *colly.HTMLElement) {
+		// maak een wedstrijdTabel van tabel, om receiver methods toe te kunnen passen
+		elem = *tabel
 	})
 
-	url := fmt.Sprintf("%swedstrijd/index/%s", w.baseURL, competitie)
+	url := fmt.Sprintf("%swedstrijd/index/%s", w.baseURL, c)
 	w.Visit(url)
-	fmt.Println(url)
-	return wedstrijden
+	return wedstrijdTabel{&elem}, nil
+}
+
+func (w wedstrijdTabel) getWedstrijdRijen() []wedstrijdRij {
+	rij := "tr:not(:first-child)"
+
+	var wRijen []wedstrijdRij
+
+	w.ForEach(rij, func(_ int, r *colly.HTMLElement) {
+		//Maak een nieuwe wedstrijdRij aan, zodat we daar receiver methods op toe kunnen passen
+		wRij, err := newWedstrijdRij(r)
+		if err != nil {
+			return
+		}
+		wRijen = append(wRijen, wRij)
+	})
+
+	return wRijen
+}
+
+type wedstrijdRij struct {
+	*colly.HTMLElement
 }
 
 func isWedstrijdRij(e *colly.HTMLElement) (b bool) {
 	//Dit is geen briljant criterium, een losse cel met alleen '.vp-team' zou nu ook als wedstrijdRij gezien worden
-	return e.ChildText(".vp-team") != ""
+	return e.ChildText(".vp-team") != "" || e.DOM.HasClass("wvdw")
 
 }
 
@@ -94,26 +124,28 @@ func newWedstrijdRij(e *colly.HTMLElement) (wedstrijdRij, error) {
 
 //NaarWedstrijd creates a Wedstrijd from a HTMLElement. If the HTMLElement cannot be converted into a Wedstrijd,
 //NaarWedstrijd will return a nil value
-func NewWedstrijd(wRij wedstrijdRij, competitie string, ronde string) (*Wedstrijd, error) {
+func NewWedstrijd(competitie string, wRij ...wedstrijdRij) (Wedstrijd, error) {
 
-	w := &Wedstrijd{}
-	w.ThuisTeam = wRij.thuisTeam()
-	w.UitTeam = wRij.uitTeam()
+	w := Wedstrijd{}
+	w.ThuisTeam = wRij[0].thuisTeam()
+	w.UitTeam = wRij[0].uitTeam()
 
 	log.Infof("Getting wedstrijd %s - %s", w.ThuisTeam, w.UitTeam)
 
-	datum, err := wRij.datum()
+	datum, err := wRij[0].datum()
 	if err != nil {
-		return &Wedstrijd{}, err
+		return Wedstrijd{}, err
 	}
 	w.Datum = datum
 
 	w.Competitie = competitie
-	w.Ronde = ronde
-	w.Wvdw = wRij.wvdw()
-	w.Uitslag = wRij.uitslag()
-	w.ThuisDoelpuntenMaker = "jaap"
-	w.UitDoelpuntenMaker = "kees"
+	w.Uitslag = wRij[0].uitslag()
+
+	w.Wvdw = wRij[0].wvdw()
+	if len(wRij) > 1 {
+		w.ThuisDoelpuntenMaker = wRij[1].thuisDoelpuntenMaker()
+		w.UitDoelpuntenMaker = wRij[1].uitDoelpuntenMaker()
+	}
 
 	return w, nil
 
@@ -128,6 +160,17 @@ func (r *wedstrijdRij) thuisTeam() string {
 func (r *wedstrijdRij) uitTeam() string {
 	t := r.ChildText("td:nth-child(3) .vp-team")
 	return t
+}
+
+func (r *wedstrijdRij) thuisDoelpuntenMaker() string {
+	d := r.ChildText("td:nth-child(2)")
+
+	return d
+}
+
+func (r *wedstrijdRij) uitDoelpuntenMaker() string {
+	d := r.ChildText("td:nth-child(3)")
+	return d
 }
 
 func (r *wedstrijdRij) uitslag() string {
