@@ -84,6 +84,7 @@ func (w *WedstrijdService) getWedstrijdTabel(c string) (wedstrijdTabel, error) {
 	})
 
 	url := fmt.Sprintf("%swedstrijd/index/%s", w.baseURL, c)
+	log.Infof("Visiting url: %s", url)
 	w.Visit(url)
 	return wedstrijdTabel{&elem}, nil
 }
