@@ -24,9 +24,6 @@ type Wedstrijd struct {
 	ThuisDoelpuntenMaker string
 	UitDoelpuntenMaker   string
 }
-type wedstrijdTabel struct {
-	*colly.HTMLElement
-}
 
 // GetWedstrijden returns Wedstrijden for a Competitie within a specified timerange
 func (w *WedstrijdService) Get(competitie string, t1 time.Time, t2 time.Time) ([]Wedstrijd, error) {
@@ -43,7 +40,7 @@ func (w *WedstrijdService) Get(competitie string, t1 time.Time, t2 time.Time) ([
 	wRijen := t.getWedstrijdRijen()
 	for i, rij := range wRijen {
 
-		datum, err := rij.datum()
+		datum, err := rij.datum(w.Time)
 		if err != nil {
 			log.Debug("Error on getting datum from rij")
 			continue
@@ -62,7 +59,7 @@ func (w *WedstrijdService) Get(competitie string, t1 time.Time, t2 time.Time) ([
 			}
 		}
 
-		wedstrijd, err = NewWedstrijd(competitie, rijen...)
+		wedstrijd, err = NewWedstrijd(competitie, w.Time, rijen...)
 
 		if err != nil {
 			return []Wedstrijd{}, err
@@ -72,6 +69,10 @@ func (w *WedstrijdService) Get(competitie string, t1 time.Time, t2 time.Time) ([
 
 	}
 	return wedstrijden, nil
+}
+
+type wedstrijdTabel struct {
+	*colly.HTMLElement
 }
 
 //getWedstrijdTabel returns the wedstrijdTabel for a competitie
@@ -124,7 +125,7 @@ func newWedstrijdRij(e *colly.HTMLElement) (wedstrijdRij, error) {
 
 //NaarWedstrijd creates a Wedstrijd from a HTMLElement. If the HTMLElement cannot be converted into a Wedstrijd,
 //NaarWedstrijd will return a nil value
-func NewWedstrijd(competitie string, wRij ...wedstrijdRij) (Wedstrijd, error) {
+func NewWedstrijd(competitie string, vandaag time.Time, wRij ...wedstrijdRij) (Wedstrijd, error) {
 
 	w := Wedstrijd{}
 	w.ThuisTeam = wRij[0].thuisTeam()
@@ -132,7 +133,7 @@ func NewWedstrijd(competitie string, wRij ...wedstrijdRij) (Wedstrijd, error) {
 
 	log.Infof("Getting wedstrijd %s - %s", w.ThuisTeam, w.UitTeam)
 
-	datum, err := wRij[0].datum()
+	datum, err := wRij[0].datum(vandaag)
 	if err != nil {
 		return Wedstrijd{}, err
 	}
@@ -183,7 +184,7 @@ func (r *wedstrijdRij) wvdw() bool {
 }
 
 //datum extracts the date from a wedstrijdRij
-func (r *wedstrijdRij) datum() (t time.Time, err error) {
+func (r *wedstrijdRij) datum(vandaag time.Time) (t time.Time, err error) {
 
 	cel, err := r.datumCel()
 
@@ -203,7 +204,6 @@ func (r *wedstrijdRij) datum() (t time.Time, err error) {
 		return t, err
 	}
 
-	vandaag := time.Now()
 	t = time.Date(vandaag.Year(), vandaag.Month(), vandaag.Day(), uur, minuten, 0, 0, vandaag.Location())
 
 	switch dag {

@@ -1,32 +1,144 @@
 package voetbalpoules
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 	"time"
 )
 
-var serverIndexResponse = []byte("hello world\n")
+const competitie = "ek_vrouwen_2022"
+
+var vandaag = time.Date(2022, 7, 10, 0, 0, 0, 0, time.Local)
+
+var PortugalZwitserland = Wedstrijd{
+	Datum:                time.Date(2022, 7, 9, 18, 0, 0, 0, time.Local),
+	Competitie:           competitie,
+	ThuisTeam:            "Portugal",
+	UitTeam:              "Zwitserland",
+	Uitslag:              "2 - 2",
+	Wvdw:                 false,
+	ThuisDoelpuntenMaker: "",
+	UitDoelpuntenMaker:   "",
+}
+
+var NederlandZweden = Wedstrijd{
+	Datum:                time.Date(2022, 7, 9, 21, 0, 0, 0, time.Local),
+	Competitie:           competitie,
+	ThuisTeam:            "Nederland",
+	UitTeam:              "Zweden",
+	Uitslag:              "1 - 1",
+	Wvdw:                 true,
+	ThuisDoelpuntenMaker: "Roord",
+	UitDoelpuntenMaker:   "Andersson",
+}
+
+var BelgiëIJsland = Wedstrijd{
+	Datum:                time.Date(2022, 7, 10, 18, 0, 0, 0, time.Local),
+	Competitie:           competitie,
+	ThuisTeam:            "België",
+	UitTeam:              "IJsland",
+	Uitslag:              "-",
+	Wvdw:                 false,
+	ThuisDoelpuntenMaker: "",
+	UitDoelpuntenMaker:   "",
+}
+
+var FrankrijkItalië = Wedstrijd{
+	Datum:                time.Date(2022, 7, 10, 21, 0, 0, 0, time.Local),
+	Competitie:           competitie,
+	ThuisTeam:            "Frankrijk",
+	UitTeam:              "Italië",
+	Uitslag:              "-",
+	Wvdw:                 false,
+	ThuisDoelpuntenMaker: "",
+	UitDoelpuntenMaker:   "",
+}
+
+var OostenrijkNoordIerland = Wedstrijd{
+	Datum:                time.Date(2022, 7, 11, 18, 0, 0, 0, time.Local),
+	Competitie:           competitie,
+	ThuisTeam:            "Oostenrijk",
+	UitTeam:              "Noord Ierland",
+	Uitslag:              "-",
+	Wvdw:                 false,
+	ThuisDoelpuntenMaker: "",
+	UitDoelpuntenMaker:   "",
+}
+
+var EngelandNoorwegen = Wedstrijd{
+	Datum:                time.Date(2022, 7, 11, 21, 0, 0, 0, time.Local),
+	Competitie:           competitie,
+	ThuisTeam:            "Engeland",
+	UitTeam:              "Noorwegen",
+	Uitslag:              "-",
+	Wvdw:                 false,
+	ThuisDoelpuntenMaker: "",
+	UitDoelpuntenMaker:   "",
+}
 
 func TestGet(t *testing.T) {
 	ts := newTestServer()
 	defer ts.Close()
 
 	client := NewClient(ts.URL)
-	t1 := time.Date(2022, 1, 1, 0, 0, 0, 0, time.Local)
-	t2 := t1.AddDate(0, 0, 360)
-	w := client.Wedstrijden.Get("ek_vrouwen_2022", t1, t2)
+	client.Time = vandaag
 
+	cases := []struct {
+		description string
+		competitie  string
+		t1          time.Time
+		t2          time.Time
+		expected    []Wedstrijd
+	}{
+		{
+			description: "Wedstrijd gisteren tussen nu en een half uur",
+			competitie:  competitie,
+			t1:          time.Date(2022, 7, 9, 17, 45, 0, 0, time.Local),
+			t2:          time.Date(2022, 7, 9, 18, 15, 0, 0, time.Local),
+			expected:    []Wedstrijd{PortugalZwitserland},
+		},
+		{
+			description: "Wedstrijd gisteren in tijdsrange",
+			competitie:  competitie,
+			t1:          time.Date(2022, 7, 9, 17, 45, 0, 0, time.Local),
+			t2:          time.Date(2022, 7, 9, 21, 45, 0, 0, time.Local),
+			expected:    []Wedstrijd{PortugalZwitserland, NederlandZweden},
+		},
+		{
+			description: "Wedstrijden vandaag",
+			competitie:  competitie,
+			t1:          time.Date(2022, 7, 10, 00, 00, 0, 0, time.Local),
+			t2:          time.Date(2022, 7, 10, 23, 59, 0, 0, time.Local),
+			expected:    []Wedstrijd{BelgiëIJsland, FrankrijkItalië},
+		},
+		{
+			description: "Wedstrijden morgen",
+			competitie:  competitie,
+			t1:          time.Date(2022, 7, 11, 00, 00, 0, 0, time.Local),
+			t2:          time.Date(2022, 7, 11, 23, 59, 0, 0, time.Local),
+			expected:    []Wedstrijd{OostenrijkNoordIerland, EngelandNoorwegen},
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.description, func(t *testing.T) {
+			result, _ := client.Wedstrijden.Get(tt.competitie, tt.t1, tt.t2)
+			if !reflect.DeepEqual(tt.expected, result) {
+				fmt.Print("Result: ")
+				fmt.Println(result)
+				fmt.Print("Expected: ")
+				fmt.Println(tt.expected)
+				t.Error("Is not equal")
+			}
+		})
+	}
 }
 
 func newTestServer() *httptest.Server {
 	mux := http.NewServeMux()
-
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
-		w.Write(serverIndexResponse)
-	})
 
 	mux.HandleFunc("/wedstrijd/index/ek_vrouwen_2022", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
@@ -186,11 +298,3 @@ func newTestServer() *httptest.Server {
 	})
 	return httptest.NewServer(mux)
 }
-
-//
-//func TestNewCompetitie(t *testing.T) {
-//
-//	if got != want {
-//		t.Errorf("got %q, wanted %q", got, want)
-//	}
-//}
