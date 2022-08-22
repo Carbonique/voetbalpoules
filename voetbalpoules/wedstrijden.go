@@ -25,7 +25,7 @@ type Wedstrijd struct {
 	UitDoelpuntenMaker   string
 }
 
-// GetWedstrijden returns Wedstrijden for a Competitie within a specified timerange
+// Get returns Wedstrijden for a Competitie within a specified timerange
 func (w *WedstrijdService) Get(competitie string, t1 time.Time, t2 time.Time) ([]Wedstrijd, error) {
 
 	var wedstrijden []Wedstrijd
@@ -124,8 +124,7 @@ func newWedstrijdRij(e *colly.HTMLElement) (wedstrijdRij, error) {
 	return wedstrijdRij{e}, nil
 }
 
-//NaarWedstrijd creates a Wedstrijd from a HTMLElement. If the HTMLElement cannot be converted into a Wedstrijd,
-//NaarWedstrijd will return a nil value
+//NewWedstrijd creates a Wedstrijd from a wedstrijdrij
 func NewWedstrijd(competitie string, vandaag time.Time, wRij ...wedstrijdRij) (Wedstrijd, error) {
 
 	w := Wedstrijd{}
