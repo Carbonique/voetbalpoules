@@ -9,15 +9,48 @@ import (
 	"time"
 )
 
-var VoorspellingPortugalZwitserland = Voorspelling{
-	Datum:                time.Date(2022, 7, 9, 18, 0, 0, 0, time.Local),
-	ThuisTeam:            "Portugal",
-	UitTeam:              "Zwitserland",
-	DoelpuntenThuis:      2,
-	DoelpuntenUit:        2,
+var VoorspellingNoorwegenNoordIerland = Voorspelling{
+	Datum:                time.Date(2022, 7, 7, 21, 0, 0, 0, time.Local),
+	ThuisTeam:            "Noorwegen",
+	UitTeam:              "Noord Ierland",
+	DoelpuntenThuis:      3,
+	DoelpuntenUit:        1,
+	Wvdw:                 true,
+	ThuisDoelpuntenMaker: "Minde",
+	UitDoelpuntenMaker:   "Beattie",
+}
+
+var VoorspellingDuitslandDenemarken = Voorspelling{
+	Datum:                time.Date(2022, 7, 8, 21, 0, 0, 0, time.Local),
+	ThuisTeam:            "Duitsland",
+	UitTeam:              "Denemarken",
+	DoelpuntenThuis:      1,
+	DoelpuntenUit:        0,
 	Wvdw:                 false,
 	ThuisDoelpuntenMaker: "",
 	UitDoelpuntenMaker:   "",
+}
+
+var VoorspellingLandALandB = Voorspelling{
+	Datum:                time.Date(2022, 7, 9, 21, 0, 0, 0, time.Local),
+	ThuisTeam:            "Land A",
+	UitTeam:              "Land B",
+	DoelpuntenThuis:      0,
+	DoelpuntenUit:        0,
+	Wvdw:                 false,
+	ThuisDoelpuntenMaker: "",
+	UitDoelpuntenMaker:   "",
+}
+
+var VoorspellingNederlandZweden = Voorspelling{
+	Datum:                time.Date(2022, 7, 9, 21, 0, 0, 0, time.Local),
+	ThuisTeam:            "Nederland",
+	UitTeam:              "Zweden",
+	DoelpuntenThuis:      2,
+	DoelpuntenUit:        1,
+	Wvdw:                 true,
+	ThuisDoelpuntenMaker: "Miedema",
+	UitDoelpuntenMaker:   "Blackstenius",
 }
 
 func TestGetVoorspelling(t *testing.T) {
@@ -25,22 +58,42 @@ func TestGetVoorspelling(t *testing.T) {
 	defer ts.Close()
 
 	client := NewClient(ts.URL)
-	client.Time = vandaag
 	cases := []struct {
 		description string
 		w           Wedstrijd
+		baseTime    time.Time
 		expected    []Voorspelling
 	}{
 		{
-			description: "Wedstrijd gisteren tussen nu en een half uur",
-			w:           PortugalZwitserland,
-			expected:    []Voorspelling{VoorspellingPortugalZwitserland},
+			baseTime:    time.Date(2022, 7, 8, 20, 30, 0, 0, time.Local),
+			description: "Wedstrijd Gisteren",
+			w:           NoorwegenNoordIerland,
+			expected:    []Voorspelling{VoorspellingNoorwegenNoordIerland},
+		},
+		{
+			baseTime:    time.Date(2022, 7, 8, 20, 30, 0, 0, time.Local),
+			description: "Wedstrijd vandaag tussen nu en een half uur",
+			w:           DuitslandDenemarken,
+			expected:    []Voorspelling{VoorspellingDuitslandDenemarken},
+		},
+		{
+			baseTime:    time.Date(2022, 7, 8, 20, 30, 0, 0, time.Local),
+			description: "Wedstrijd Nederland - Zweden morgen",
+			w:           NederlandZweden,
+			expected:    []Voorspelling{VoorspellingNederlandZweden},
+		},
+		{
+			baseTime:    time.Date(2022, 7, 8, 20, 30, 0, 0, time.Local),
+			description: "Wedstrijd Land A - Land B (fictieve wedstrijd die tegelijkertijd gespeeld wordt met Nederland - Zweden)",
+			w:           LandALandB,
+			expected:    []Voorspelling{VoorspellingLandALandB},
 		},
 	}
 
 	for _, tt := range cases {
 		t.Run(tt.description, func(t *testing.T) {
-			result, _ := client.Deelnemer.GetVoorspelling("1", PortugalZwitserland)
+			client.Time = tt.baseTime
+			result, _ := client.Deelnemer.GetVoorspelling("1", tt.w)
 			if !reflect.DeepEqual(tt.expected, result) {
 				fmt.Print("Result: ")
 				fmt.Println(result)
@@ -82,7 +135,7 @@ func newDeelnemerTestServer() *httptest.Server {
 		</tr>
 	<tr>
 	<td class="nowrap">
-	wo	<div>21:00</div>
+	Morgen	<div>21:00</div>
 	
 	</td>
 	<td>		    
@@ -225,12 +278,14 @@ func newDeelnemerTestServer() *httptest.Server {
 	</div>
 	</td>
 	<td class="nowrap">
-	
-	2
+
+	1
 		-
-	2
-			</td>
-	<td>
+	0
+						<div class="vp-uitslag">
+					4 - 0
+			</div>
+	</td>
 	
 	</td>
 	<td>
@@ -323,26 +378,26 @@ func newDeelnemerTestServer() *httptest.Server {
 	</tr>
 	<tr>
 	<td class="nowrap">
-	zo	<div>18:00</div>
+	Morgen	<div>21:00</div>
 	
 	</td>
 	<td>		    
 		<img alt="België" src="Voorspellingen%20Ajvdt22_files/214244.svg">
 	<div class="vp-team">
-		België
+		Land A
 			<span>(D)</span>
 	</div>
 	</td>
 	<td>
 		<img alt="IJsland" src="Voorspellingen%20Ajvdt22_files/214245.svg">
 	<div class="vp-team">
-		IJsland
+		Land B
 			<span>(D)</span>
 	</div>
 	</td>
 	<td class="nowrap">
 	
-	1
+	0
 		-
 	0
 			</td>

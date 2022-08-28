@@ -4,7 +4,16 @@ import "time"
 
 const competitie = "ek_vrouwen_2022"
 
-var vandaag = time.Date(2022, 7, 10, 0, 0, 0, 0, time.Local)
+var NoorwegenNoordIerland = Wedstrijd{
+	Datum:                time.Date(2022, 7, 7, 21, 0, 0, 0, time.Local),
+	Competitie:           competitie,
+	ThuisTeam:            "Noorwegen",
+	UitTeam:              "Noord Ierland",
+	Uitslag:              "4 - 1",
+	Wvdw:                 true,
+	ThuisDoelpuntenMaker: "Blakstad",
+	UitDoelpuntenMaker:   "Nelson",
+}
 
 var PortugalZwitserland = Wedstrijd{
 	Datum:                time.Date(2022, 7, 9, 18, 0, 0, 0, time.Local),
@@ -26,6 +35,17 @@ var NederlandZweden = Wedstrijd{
 	Wvdw:                 true,
 	ThuisDoelpuntenMaker: "Roord",
 	UitDoelpuntenMaker:   "Andersson",
+}
+
+var LandALandB = Wedstrijd{
+	Datum:                time.Date(2022, 7, 9, 21, 0, 0, 0, time.Local),
+	Competitie:           competitie,
+	ThuisTeam:            "Land A",
+	UitTeam:              "Land B",
+	Uitslag:              "0 - 1",
+	Wvdw:                 false,
+	ThuisDoelpuntenMaker: "",
+	UitDoelpuntenMaker:   "",
 }
 
 var BelgiëIJsland = Wedstrijd{
@@ -67,6 +87,17 @@ var EngelandNoorwegen = Wedstrijd{
 	ThuisTeam:            "Engeland",
 	UitTeam:              "Noorwegen",
 	Uitslag:              "-",
+	Wvdw:                 false,
+	ThuisDoelpuntenMaker: "",
+	UitDoelpuntenMaker:   "",
+}
+
+var DuitslandDenemarken = Wedstrijd{
+	Datum:                time.Date(2022, 7, 8, 21, 0, 0, 0, time.Local),
+	Competitie:           competitie,
+	ThuisTeam:            "Duitsland",
+	UitTeam:              "Denemarken",
+	Uitslag:              "4 - 0",
 	Wvdw:                 false,
 	ThuisDoelpuntenMaker: "",
 	UitDoelpuntenMaker:   "",

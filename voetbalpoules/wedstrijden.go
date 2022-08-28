@@ -47,7 +47,7 @@ func (w *WedstrijdService) Get(competitie string, t1 time.Time, t2 time.Time) ([
 		}
 
 		if !inTimeSpan(t1, t2, datum) {
-			log.Infof("Found wedstrijd at %s, but is not within range %s - %s", datum.Format(time.RFC822), t1.Format(time.RFC822), t2.Format(time.RFC822))
+			log.Debugf("Found wedstrijd at %s, but is not within range %s - %s", datum.Format(time.RFC822), t1.Format(time.RFC822), t2.Format(time.RFC822))
 			continue
 		}
 
@@ -118,7 +118,7 @@ func isWedstrijdRij(e *colly.HTMLElement) (b bool) {
 
 func newWedstrijdRij(e *colly.HTMLElement) (wedstrijdRij, error) {
 	if !isWedstrijdRij(e) {
-		log.Errorf("Element %s is geen wedstrijdrij", strings.Fields(e.Text))
+		log.Debugf("Element %s is geen wedstrijdrij", strings.Fields(e.Text))
 		return wedstrijdRij{}, fmt.Errorf("is geen wedstrijdrij")
 	}
 	return wedstrijdRij{e}, nil

@@ -2,6 +2,7 @@ package voetbalpoules
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -37,6 +38,7 @@ type voorspellingTabel struct {
 // Get returns a voorspelling for a deelnemer for a wedstrijd
 func (d *DeelnemerService) GetVoorspelling(id string, w Wedstrijd) ([]Voorspelling, error) {
 
+	log.Infof("Trying to get voorspellingen for %s - %s", w.ThuisTeam, w.UitTeam)
 	var voorspellingen []Voorspelling
 	var voorspelling Voorspelling
 
@@ -47,6 +49,7 @@ func (d *DeelnemerService) GetVoorspelling(id string, w Wedstrijd) ([]Voorspelli
 	}
 	// Now loop through the voorspellingTabel to get the voorspellingRijen
 	vRijen := t.getVoorspellingRijen()
+
 	for i, rij := range vRijen {
 
 		datum, err := rij.datum(d.Time)
@@ -55,9 +58,11 @@ func (d *DeelnemerService) GetVoorspelling(id string, w Wedstrijd) ([]Voorspelli
 			continue
 		}
 		if datum != w.Datum {
-			log.Debug("datum is not wedstrijd datum. Continuing")
+			log.Debugf("Found datum %s is not equal to wedstrijddatum: %s", datum.String(), w.Datum.String())
 			continue
 		}
+		log.Debugf("Found datum %s is equal to wedstrijddatum: %s", datum.String(), w.Datum.String())
+
 		// Als wvdw dan voegen we een extra rij toe
 		rijen := []voorspellingRij{rij}
 		if rij.DOM.HasClass("wvdw") {
@@ -66,10 +71,16 @@ func (d *DeelnemerService) GetVoorspelling(id string, w Wedstrijd) ([]Voorspelli
 			}
 		}
 
-		voorspelling, err = NewVoorspelling(w.Competitie, w.Datum, rijen...)
+		voorspelling, err = NewVoorspelling(w.Competitie, d.Time, rijen...)
 
 		if err != nil {
 			return []Voorspelling{}, err
+		}
+
+		if voorspelling.ThuisTeam != w.ThuisTeam && voorspelling.UitTeam != w.UitTeam {
+			log.Debugf("Wedstrijd according to voorspelling: %s - %s", voorspelling.ThuisTeam, voorspelling.UitTeam)
+			log.Debugf("Wedstrijd according to Wedstrijd: %s - %s", w.ThuisTeam, w.UitTeam)
+			continue
 		}
 
 		voorspellingen = append(voorspellingen, voorspelling)
@@ -81,8 +92,8 @@ func (d *DeelnemerService) GetVoorspelling(id string, w Wedstrijd) ([]Voorspelli
 //getVoorspellingTabel returns the voorspellingtabel for a user
 func (d *DeelnemerService) getVoorspellingTabel(id string, w Wedstrijd) (voorspellingTabel, error) {
 	var elem colly.HTMLElement
-	d.OnHTML("table.wedstrijden", func(tabel *colly.HTMLElement) {
-		// maak een wedstrijdTabel van tabel, om receiver methods toe te kunnen passen
+	d.OnHTML("table.voorspellingen", func(tabel *colly.HTMLElement) {
+		// maak een voorspellingTabel van tabel, om receiver methods toe te kunnen passen
 		elem = *tabel
 	})
 
@@ -98,31 +109,28 @@ type voorspellingRij struct {
 
 func (v voorspellingTabel) getVoorspellingRijen() []voorspellingRij {
 	rij := "tr:not(:first-child)"
-
 	var vRijen []voorspellingRij
-
 	v.ForEach(rij, func(_ int, r *colly.HTMLElement) {
-		//Maak een nieuwe wedstrijdRij aan, zodat we daar receiver methods op toe kunnen passen
+		//Maak een nieuwe VoorspellingRij aan, zodat we daar receiver methods op toe kunnen passen
 		vRij, err := newVoorspellingRij(r)
 		if err != nil {
 			return
 		}
 		vRijen = append(vRijen, vRij)
 	})
-
 	return vRijen
 }
 
 func newVoorspellingRij(e *colly.HTMLElement) (voorspellingRij, error) {
 	if !isVoorspellingRij(e) {
-		log.Errorf("Element %s is geen voorspellingrij", strings.Fields(e.Text))
+		log.Debugf("Element %s is geen voorspellingrij", strings.Fields(e.Text))
 		return voorspellingRij{}, fmt.Errorf("is geen voorspellingrij")
 	}
 	return voorspellingRij{e}, nil
 }
 
 //NewVoorspelling creates a voorspelling from a voorspellingrij
-func NewVoorspelling(competitie string, vandaag time.Time, vRij ...voorspellingRij) (Voorspelling, error) {
+func NewVoorspelling(competitie string, baseDate time.Time, vRij ...voorspellingRij) (Voorspelling, error) {
 
 	v := Voorspelling{}
 	v.ThuisTeam = vRij[0].thuisTeam()
@@ -130,7 +138,7 @@ func NewVoorspelling(competitie string, vandaag time.Time, vRij ...voorspellingR
 
 	log.Infof("Getting voorspelling %s - %s", v.ThuisTeam, v.UitTeam)
 
-	datum, err := vRij[0].datum(vandaag)
+	datum, err := vRij[0].datum(baseDate)
 	if err != nil {
 		return Voorspelling{}, err
 	}
@@ -150,14 +158,27 @@ func NewVoorspelling(competitie string, vandaag time.Time, vRij ...voorspellingR
 }
 
 func (r *voorspellingRij) thuisTeam() string {
-	t := r.ChildText("td:nth-child(2) .vp-team")
+	re, err := regexp.Compile(`\((.*?)\)`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	tekst := r.ChildText("td:nth-child(2) .vp-team")
 
-	return t
+	team := re.ReplaceAllString(tekst, " ")
+
+	return strings.TrimSpace(team)
 }
 
 func (r *voorspellingRij) uitTeam() string {
-	t := r.ChildText("td:nth-child(3) .vp-team")
-	return t
+	re, err := regexp.Compile(`\((.*?)\)`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	tekst := r.ChildText("td:nth-child(3) .vp-team")
+
+	team := re.ReplaceAllString(tekst, " ")
+
+	return strings.TrimSpace(team)
 }
 
 func (r *voorspellingRij) thuisDoelpuntenMaker() string {
@@ -172,14 +193,24 @@ func (r *voorspellingRij) uitDoelpuntenMaker() string {
 }
 
 func (r *voorspellingRij) doelpuntenThuis() int {
-	u := r.ChildText("td:nth-child(4)")
-	i, _ := strconv.Atoi(strings.Split(u, "-")[0])
+	rawTekst := r.ChildText("td:nth-child(4)")
+	sanitizedTekst := strings.TrimSpace(strings.ReplaceAll(rawTekst, r.ChildText(".vp-uitslag"), ""))
+	stringGoals := strings.TrimSpace(strings.Split(sanitizedTekst, "-")[0])
+	i, err := strconv.Atoi(stringGoals)
+	if err != nil {
+		log.Panic()
+	}
 	return i
 }
 
 func (r *voorspellingRij) doelpuntenUit() int {
-	u := r.ChildText("td:nth-child(4)")
-	i, _ := strconv.Atoi(strings.Split(u, "-")[1])
+	rawTekst := r.ChildText("td:nth-child(4)")
+	sanitizedTekst := strings.TrimSpace(strings.ReplaceAll(rawTekst, r.ChildText(".vp-uitslag"), ""))
+	stringGoals := strings.TrimSpace(strings.Split(sanitizedTekst, "-")[1])
+	i, err := strconv.Atoi(stringGoals)
+	if err != nil {
+		log.Panic()
+	}
 	return i
 }
 
@@ -194,7 +225,7 @@ func isVoorspellingRij(e *colly.HTMLElement) (b bool) {
 }
 
 //datum extracts the date from a voorspellingRij
-func (r *voorspellingRij) datum(vandaag time.Time) (t time.Time, err error) {
+func (r *voorspellingRij) datum(baseDate time.Time) (t time.Time, err error) {
 
 	cel, err := r.datumCel()
 
@@ -214,19 +245,19 @@ func (r *voorspellingRij) datum(vandaag time.Time) (t time.Time, err error) {
 		return t, err
 	}
 
-	t = time.Date(vandaag.Year(), vandaag.Month(), vandaag.Day(), uur, minuten, 0, 0, vandaag.Location())
+	t = time.Date(baseDate.Year(), baseDate.Month(), baseDate.Day(), uur, minuten, 0, 0, baseDate.Location())
 
 	switch dag {
 
 	case "Gisteren":
 		t = t.AddDate(0, 0, -1)
-
 	case "Vandaag":
 		// do nothing
-
 	case "Morgen":
 		t = t.AddDate(0, 0, 1)
-
+	default:
+		// If no match, just add 20 years.
+		t = t.AddDate(20, 0, 0)
 	}
 	return t, err
 }

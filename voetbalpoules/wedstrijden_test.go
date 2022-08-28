@@ -12,6 +12,7 @@ import (
 func TestWedstrijdenGet(t *testing.T) {
 	ts := newWedstrijdenTestServer()
 	defer ts.Close()
+	vandaag := time.Date(2022, 7, 10, 0, 0, 0, 0, time.Local)
 
 	client := NewClient(ts.URL)
 	client.Time = vandaag
