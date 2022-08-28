@@ -25,7 +25,7 @@ type Wedstrijd struct {
 	UitDoelpuntenMaker   string
 }
 
-// GetWedstrijden returns Wedstrijden for a Competitie within a specified timerange
+// Get returns Wedstrijden for a Competitie within a specified timerange
 func (w *WedstrijdService) Get(competitie string, t1 time.Time, t2 time.Time) ([]Wedstrijd, error) {
 
 	var wedstrijden []Wedstrijd
@@ -47,7 +47,7 @@ func (w *WedstrijdService) Get(competitie string, t1 time.Time, t2 time.Time) ([
 		}
 
 		if !inTimeSpan(t1, t2, datum) {
-			log.Infof("Found wedstrijd at %s, but is not within range %s - %s", datum.Format(time.RFC822), t1.Format(time.RFC822), t2.Format(time.RFC822))
+			log.Debugf("Found wedstrijd at %s, but is not within range %s - %s", datum.Format(time.RFC822), t1.Format(time.RFC822), t2.Format(time.RFC822))
 			continue
 		}
 
@@ -84,6 +84,7 @@ func (w *WedstrijdService) getWedstrijdTabel(c string) (wedstrijdTabel, error) {
 	})
 
 	url := fmt.Sprintf("%swedstrijd/index/%s", w.baseURL, c)
+	log.Infof("Visiting url: %s", url)
 	w.Visit(url)
 	return wedstrijdTabel{&elem}, nil
 }
@@ -117,14 +118,13 @@ func isWedstrijdRij(e *colly.HTMLElement) (b bool) {
 
 func newWedstrijdRij(e *colly.HTMLElement) (wedstrijdRij, error) {
 	if !isWedstrijdRij(e) {
-		log.Errorf("Element %s is geen wedstrijdrij", strings.Fields(e.Text))
+		log.Debugf("Element %s is geen wedstrijdrij", strings.Fields(e.Text))
 		return wedstrijdRij{}, fmt.Errorf("is geen wedstrijdrij")
 	}
 	return wedstrijdRij{e}, nil
 }
 
-//NaarWedstrijd creates a Wedstrijd from a HTMLElement. If the HTMLElement cannot be converted into a Wedstrijd,
-//NaarWedstrijd will return a nil value
+//NewWedstrijd creates a Wedstrijd from a wedstrijdrij
 func NewWedstrijd(competitie string, vandaag time.Time, wRij ...wedstrijdRij) (Wedstrijd, error) {
 
 	w := Wedstrijd{}
