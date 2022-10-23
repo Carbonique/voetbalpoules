@@ -30,16 +30,16 @@ type voorspellingTabel struct {
 }
 
 // Get returns a voorspelling for a deelnemer for a wedstrijd
-func (v *VoorspellingenService) Get(deelnemerID string, w Wedstrijd) ([]Voorspelling, error) {
+func (v *VoorspellingenService) Get(deelnemerID int, w Wedstrijd) (Voorspelling, error) {
 
-	log.Infof("Trying to get voorspellingen for %s - %s", w.ThuisTeam, w.UitTeam)
-	var voorspellingen []Voorspelling
+	log.Infof("Trying to get voorspelling for %s - %s", w.ThuisTeam, w.UitTeam)
+
 	var voorspelling Voorspelling
 
 	// First fetch the wedstrijdTabel
 	t, err := v.getVoorspellingTabel(deelnemerID, w)
 	if err != nil {
-		return []Voorspelling{}, err
+		return Voorspelling{}, err
 	}
 	// Now loop through the voorspellingTabel to get the voorspellingRijen
 	vRijen := t.getVoorspellingRijen()
@@ -64,34 +64,33 @@ func (v *VoorspellingenService) Get(deelnemerID string, w Wedstrijd) ([]Voorspel
 				rijen = append(rijen, vRijen[i+1])
 			}
 		}
-
-		voorspelling, err = NewVoorspelling(w.Competitie, v.time, rijen...)
+		//we gebruiken tempVoorspelling, omdat we nog moeten checken of dit echt de wedstrijd is die we zoeken
+		//het kan zijn dat er anders een wedstrijd die op hetzelfde tijdstip start gepakt wordt.
+		tempVoorspelling, err := NewVoorspelling(w.Competitie, v.time, rijen...)
 
 		if err != nil {
-			return []Voorspelling{}, err
+			return Voorspelling{}, err
 		}
 
-		if voorspelling.ThuisTeam != w.ThuisTeam && voorspelling.UitTeam != w.UitTeam {
-			log.Debugf("Wedstrijd according to voorspelling: %s - %s", voorspelling.ThuisTeam, voorspelling.UitTeam)
+		if tempVoorspelling.ThuisTeam != w.ThuisTeam && tempVoorspelling.UitTeam != w.UitTeam {
+			log.Debugf("Wedstrijd according to voorspelling: %s - %s", tempVoorspelling.ThuisTeam, tempVoorspelling.UitTeam)
 			log.Debugf("Wedstrijd according to Wedstrijd: %s - %s", w.ThuisTeam, w.UitTeam)
 			continue
 		}
-
-		voorspellingen = append(voorspellingen, voorspelling)
-
+		voorspelling = tempVoorspelling
 	}
-	return voorspellingen, nil
+	return voorspelling, nil
 }
 
 //getVoorspellingTabel returns the voorspellingtabel for a user
-func (v *VoorspellingenService) getVoorspellingTabel(id string, w Wedstrijd) (voorspellingTabel, error) {
+func (v *VoorspellingenService) getVoorspellingTabel(id int, w Wedstrijd) (voorspellingTabel, error) {
 	var elem colly.HTMLElement
 	v.client.OnHTML("table.voorspellingen", func(tabel *colly.HTMLElement) {
 		// maak een voorspellingTabel van tabel, om receiver methods toe te kunnen passen
 		elem = *tabel
 	})
 
-	url := fmt.Sprintf("%sdeelnemer/%s/voorspellingen/%s", v.baseURL, id, w.Competitie)
+	url := fmt.Sprintf("%sdeelnemer/%d/voorspellingen/%s", v.baseURL, id, w.Competitie)
 	log.Infof("Visiting url: %s", url)
 	v.client.Visit(url)
 	return voorspellingTabel{&elem}, nil

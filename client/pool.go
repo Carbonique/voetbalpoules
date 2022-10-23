@@ -42,8 +42,8 @@ func (p *PoolService) GetDeelnemers(id int, competitie string) []Deelnemer {
 }
 
 //GetStand returns the stand for a pool
-func (p *PoolService) GetStand(id int, competitie string) []Deelnemer {
-	deelnemers := p.GetDeelnemers(id, competitie)
+func (p *PoolService) GetStand(poolID int, competitie string) []Deelnemer {
+	deelnemers := p.GetDeelnemers(poolID, competitie)
 	// In principe return GetDeelnemers een gesorteerde stand op basis van de html tabel,
 	// maar voor de zekerheid sorteren we alsnog
 	return p.SorteerStand(deelnemers)

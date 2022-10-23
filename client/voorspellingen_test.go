@@ -62,38 +62,38 @@ func TestGetVoorspellingen(t *testing.T) {
 		description string
 		w           Wedstrijd
 		baseTime    time.Time
-		expected    []Voorspelling
+		expected    Voorspelling
 	}{
 		{
 			baseTime:    time.Date(2022, 7, 8, 20, 30, 0, 0, time.Local),
 			description: "Wedstrijd Gisteren",
 			w:           NoorwegenNoordIerland,
-			expected:    []Voorspelling{VoorspellingNoorwegenNoordIerland},
+			expected:    VoorspellingNoorwegenNoordIerland,
 		},
 		{
 			baseTime:    time.Date(2022, 7, 8, 20, 30, 0, 0, time.Local),
 			description: "Wedstrijd vandaag tussen nu en een half uur",
 			w:           DuitslandDenemarken,
-			expected:    []Voorspelling{VoorspellingDuitslandDenemarken},
+			expected:    VoorspellingDuitslandDenemarken,
 		},
 		{
 			baseTime:    time.Date(2022, 7, 8, 20, 30, 0, 0, time.Local),
 			description: "Wedstrijd Nederland - Zweden morgen",
 			w:           NederlandZweden,
-			expected:    []Voorspelling{VoorspellingNederlandZweden},
+			expected:    VoorspellingNederlandZweden,
 		},
 		{
 			baseTime:    time.Date(2022, 7, 8, 20, 30, 0, 0, time.Local),
 			description: "Wedstrijd Land A - Land B (fictieve wedstrijd die tegelijkertijd gespeeld wordt met Nederland - Zweden)",
 			w:           LandALandB,
-			expected:    []Voorspelling{VoorspellingLandALandB},
+			expected:    VoorspellingLandALandB,
 		},
 	}
 
 	for _, tt := range cases {
 		t.Run(tt.description, func(t *testing.T) {
 			client.time = tt.baseTime
-			result, _ := client.Voorspellingen.Get("1", tt.w)
+			result, _ := client.Voorspellingen.Get(1, tt.w)
 			if !reflect.DeepEqual(tt.expected, result) {
 				fmt.Print("Result: ")
 				fmt.Println(result)
