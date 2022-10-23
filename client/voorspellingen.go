@@ -1,4 +1,4 @@
-package scraper
+package client
 
 import (
 	"fmt"
@@ -46,7 +46,7 @@ func (v *VoorspellingenService) Get(deelnemerID string, w Wedstrijd) ([]Voorspel
 
 	for i, rij := range vRijen {
 
-		datum, err := rij.datum(v.Time)
+		datum, err := rij.datum(v.time)
 		if err != nil {
 			log.Debug("Error on getting datum from rij")
 			continue
@@ -65,7 +65,7 @@ func (v *VoorspellingenService) Get(deelnemerID string, w Wedstrijd) ([]Voorspel
 			}
 		}
 
-		voorspelling, err = NewVoorspelling(w.Competitie, v.Time, rijen...)
+		voorspelling, err = NewVoorspelling(w.Competitie, v.time, rijen...)
 
 		if err != nil {
 			return []Voorspelling{}, err
@@ -86,14 +86,14 @@ func (v *VoorspellingenService) Get(deelnemerID string, w Wedstrijd) ([]Voorspel
 //getVoorspellingTabel returns the voorspellingtabel for a user
 func (v *VoorspellingenService) getVoorspellingTabel(id string, w Wedstrijd) (voorspellingTabel, error) {
 	var elem colly.HTMLElement
-	v.OnHTML("table.voorspellingen", func(tabel *colly.HTMLElement) {
+	v.client.OnHTML("table.voorspellingen", func(tabel *colly.HTMLElement) {
 		// maak een voorspellingTabel van tabel, om receiver methods toe te kunnen passen
 		elem = *tabel
 	})
 
 	url := fmt.Sprintf("%sdeelnemer/%s/voorspellingen/%s", v.baseURL, id, w.Competitie)
 	log.Infof("Visiting url: %s", url)
-	v.Visit(url)
+	v.client.Visit(url)
 	return voorspellingTabel{&elem}, nil
 }
 

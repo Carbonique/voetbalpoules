@@ -1,4 +1,4 @@
-package scraper
+package client
 
 import (
 	"fmt"
@@ -92,7 +92,7 @@ func TestGetVoorspellingen(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.description, func(t *testing.T) {
-			client.Time = tt.baseTime
+			client.time = tt.baseTime
 			result, _ := client.Voorspellingen.Get("1", tt.w)
 			if !reflect.DeepEqual(tt.expected, result) {
 				fmt.Print("Result: ")

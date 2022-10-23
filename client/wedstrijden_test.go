@@ -1,4 +1,4 @@
-package scraper
+package client
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ func TestWedstrijdenGet(t *testing.T) {
 	vandaag := time.Date(2022, 7, 10, 0, 0, 0, 0, time.Local)
 
 	client := NewClient(ts.URL)
-	client.Time = vandaag
+	client.time = vandaag
 
 	cases := []struct {
 		description string

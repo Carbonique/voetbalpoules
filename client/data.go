@@ -1,4 +1,4 @@
-package scraper
+package client
 
 import "time"
 

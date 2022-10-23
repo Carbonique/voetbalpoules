@@ -1,4 +1,4 @@
-package scraper
+package client
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ type Pool struct {
 func (p *PoolService) GetDeelnemers(id int, competitie string) []Deelnemer {
 	deelnemers := []Deelnemer{}
 
-	p.OnHTML("table.stand", func(stand *colly.HTMLElement) {
+	p.client.OnHTML("table.stand", func(stand *colly.HTMLElement) {
 		stand.ForEach("tr:not(:first-child)", func(_ int, rij *colly.HTMLElement) {
 			dRij, err := newDeelnemerRij(rij)
 			if err != nil {
@@ -37,7 +37,7 @@ func (p *PoolService) GetDeelnemers(id int, competitie string) []Deelnemer {
 	url := fmt.Sprintf("%s/poule/%d/stand/%s", p.baseURL, id, competitie)
 	log.Infof("Visiting url: %s", url)
 
-	p.Visit(url)
+	p.client.Visit(url)
 	return deelnemers
 }
 

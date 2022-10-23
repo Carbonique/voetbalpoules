@@ -1,4 +1,4 @@
-package scraper
+package client
 
 import (
 	"time"
@@ -8,9 +8,9 @@ import (
 
 //A client that manages communication with Voetbalpoules
 type Client struct {
-	*colly.Collector
+	client  *colly.Collector
 	baseURL string
-	Time    time.Time
+	time    time.Time
 
 	Wedstrijden    *WedstrijdService
 	Pool           *PoolService
@@ -21,17 +21,17 @@ type service struct {
 	*Client
 }
 
-//Creates a new Scraper instance
+//Creates a new Client instance
 func NewClient(url string) *Client {
 	col := colly.NewCollector(
 		colly.AllowURLRevisit(),
 	)
 
 	c := &Client{
-		Collector: col,
-		baseURL:   url + "/"}
+		client:  col,
+		baseURL: url + "/"}
 
-	c.Time = time.Now()
+	c.time = time.Now()
 
 	c.Wedstrijden = &WedstrijdService{c}
 	c.Pool = &PoolService{c}

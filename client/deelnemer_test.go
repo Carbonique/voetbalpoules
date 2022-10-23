@@ -1,4 +1,4 @@
-package scraper
+package client
 
 import (
 	"fmt"
@@ -28,8 +28,8 @@ func TestNewDeelnemer(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.description, func(t *testing.T) {
-			client.Visit(ts.URL + "/poule")
-			client.OnHTML("tr", func(e *colly.HTMLElement) {
+			client.client.Visit(ts.URL + "/poule")
+			client.client.OnHTML("tr", func(e *colly.HTMLElement) {
 
 				fmt.Println(e.Text)
 				rij := deelnemerRij{e}
