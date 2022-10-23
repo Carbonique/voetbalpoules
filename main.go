@@ -1,12 +1,15 @@
 package main
 
 import (
-	"github.com/Carbonique/voetbalpoules-messenger/voetbalpoules"
+	"fmt"
+
+	"github.com/Carbonique/voetbalpoules/scraper"
 )
 
 func main() {
 
-	client := voetbalpoules.NewClient("https://www.voetbalpoules.nl/")
+	client := scraper.NewClient("https://www.voetbalpoules.nl/")
 
-	client.Pool.GetDeelnemers(180001, "eredivisie")
+	d := client.Pool.GetDeelnemers(18173, "eredivisie")
+	fmt.Printf("d: %v\n", d)
 }

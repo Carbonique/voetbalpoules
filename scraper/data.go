@@ -1,4 +1,4 @@
-package voetbalpoules
+package scraper
 
 import "time"
 

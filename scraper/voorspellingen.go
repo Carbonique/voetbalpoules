@@ -1,4 +1,4 @@
-package voetbalpoules
+package scraper
 
 import (
 	"fmt"
@@ -11,14 +11,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//DeelnemerService handles communication related to Deelnemers
-type DeelnemerService service
-
-type Deelnemer struct {
-	Naam   string
-	ID     int
-	Punten int
-}
+//VoorspellingenService handles communication related to Voorspellingen
+type VoorspellingenService service
 
 type Voorspelling struct {
 	Datum                time.Time
@@ -36,14 +30,14 @@ type voorspellingTabel struct {
 }
 
 // Get returns a voorspelling for a deelnemer for a wedstrijd
-func (d *DeelnemerService) GetVoorspelling(id string, w Wedstrijd) ([]Voorspelling, error) {
+func (v *VoorspellingenService) Get(deelnemerID string, w Wedstrijd) ([]Voorspelling, error) {
 
 	log.Infof("Trying to get voorspellingen for %s - %s", w.ThuisTeam, w.UitTeam)
 	var voorspellingen []Voorspelling
 	var voorspelling Voorspelling
 
 	// First fetch the wedstrijdTabel
-	t, err := d.getVoorspellingTabel(id, w)
+	t, err := v.getVoorspellingTabel(deelnemerID, w)
 	if err != nil {
 		return []Voorspelling{}, err
 	}
@@ -52,7 +46,7 @@ func (d *DeelnemerService) GetVoorspelling(id string, w Wedstrijd) ([]Voorspelli
 
 	for i, rij := range vRijen {
 
-		datum, err := rij.datum(d.Time)
+		datum, err := rij.datum(v.Time)
 		if err != nil {
 			log.Debug("Error on getting datum from rij")
 			continue
@@ -71,7 +65,7 @@ func (d *DeelnemerService) GetVoorspelling(id string, w Wedstrijd) ([]Voorspelli
 			}
 		}
 
-		voorspelling, err = NewVoorspelling(w.Competitie, d.Time, rijen...)
+		voorspelling, err = NewVoorspelling(w.Competitie, v.Time, rijen...)
 
 		if err != nil {
 			return []Voorspelling{}, err
@@ -90,16 +84,16 @@ func (d *DeelnemerService) GetVoorspelling(id string, w Wedstrijd) ([]Voorspelli
 }
 
 //getVoorspellingTabel returns the voorspellingtabel for a user
-func (d *DeelnemerService) getVoorspellingTabel(id string, w Wedstrijd) (voorspellingTabel, error) {
+func (v *VoorspellingenService) getVoorspellingTabel(id string, w Wedstrijd) (voorspellingTabel, error) {
 	var elem colly.HTMLElement
-	d.OnHTML("table.voorspellingen", func(tabel *colly.HTMLElement) {
+	v.OnHTML("table.voorspellingen", func(tabel *colly.HTMLElement) {
 		// maak een voorspellingTabel van tabel, om receiver methods toe te kunnen passen
 		elem = *tabel
 	})
 
-	url := fmt.Sprintf("%sdeelnemer/%s/voorspellingen/%s", d.baseURL, id, w.Competitie)
+	url := fmt.Sprintf("%sdeelnemer/%s/voorspellingen/%s", v.baseURL, id, w.Competitie)
 	log.Infof("Visiting url: %s", url)
-	d.Visit(url)
+	v.Visit(url)
 	return voorspellingTabel{&elem}, nil
 }
 

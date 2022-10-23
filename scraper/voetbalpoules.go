@@ -1,4 +1,4 @@
-package voetbalpoules
+package scraper
 
 import (
 	"time"
@@ -12,9 +12,9 @@ type Client struct {
 	baseURL string
 	Time    time.Time
 
-	Wedstrijden *WedstrijdService
-	Pool        *PoolService
-	Deelnemer   *DeelnemerService
+	Wedstrijden    *WedstrijdService
+	Pool           *PoolService
+	Voorspellingen *VoorspellingenService
 }
 
 type service struct {
@@ -35,7 +35,7 @@ func NewClient(url string) *Client {
 
 	c.Wedstrijden = &WedstrijdService{c}
 	c.Pool = &PoolService{c}
-	c.Deelnemer = &DeelnemerService{c}
+	c.Voorspellingen = &VoorspellingenService{c}
 
 	return c
 

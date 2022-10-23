@@ -1,4 +1,4 @@
-package voetbalpoules
+package scraper
 
 import (
 	"fmt"
@@ -53,8 +53,8 @@ var VoorspellingNederlandZweden = Voorspelling{
 	UitDoelpuntenMaker:   "Blackstenius",
 }
 
-func TestGetVoorspelling(t *testing.T) {
-	ts := newDeelnemerTestServer()
+func TestGetVoorspellingen(t *testing.T) {
+	ts := newVoorspellingenTestServer()
 	defer ts.Close()
 
 	client := NewClient(ts.URL)
@@ -93,7 +93,7 @@ func TestGetVoorspelling(t *testing.T) {
 	for _, tt := range cases {
 		t.Run(tt.description, func(t *testing.T) {
 			client.Time = tt.baseTime
-			result, _ := client.Deelnemer.GetVoorspelling("1", tt.w)
+			result, _ := client.Voorspellingen.Get("1", tt.w)
 			if !reflect.DeepEqual(tt.expected, result) {
 				fmt.Print("Result: ")
 				fmt.Println(result)
@@ -105,7 +105,7 @@ func TestGetVoorspelling(t *testing.T) {
 	}
 }
 
-func newDeelnemerTestServer() *httptest.Server {
+func newVoorspellingenTestServer() *httptest.Server {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/deelnemer/1/voorspellingen/ek_vrouwen_2022", func(w http.ResponseWriter, r *http.Request) {
