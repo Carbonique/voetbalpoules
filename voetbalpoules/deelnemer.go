@@ -1,10 +1,12 @@
 package voetbalpoules
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/gocolly/colly/v2"
+	log "github.com/sirupsen/logrus"
 )
 
 type Deelnemer struct {
@@ -13,11 +15,12 @@ type Deelnemer struct {
 	Punten int
 }
 
-type DeelnemerRij struct {
+type deelnemerRij struct {
 	*colly.HTMLElement
 }
 
-func NewDeelnemer(d DeelnemerRij) (Deelnemer, error) {
+func NewDeelnemer(d deelnemerRij) (Deelnemer, error) {
+
 	punten, err := d.punten()
 	if err != nil {
 		return Deelnemer{}, err
@@ -38,7 +41,20 @@ func NewDeelnemer(d DeelnemerRij) (Deelnemer, error) {
 	return deelnemer, nil
 }
 
-func (d DeelnemerRij) punten() (int, error) {
+func newDeelnemerRij(e *colly.HTMLElement) (deelnemerRij, error) {
+	if !isDeelnemerRij(e) {
+		log.Debugf("Element %s is geen deelnemerRij", strings.Fields(e.Text))
+		return deelnemerRij{}, fmt.Errorf("is geen deelnemerRij")
+	}
+	return deelnemerRij{e}, nil
+}
+func isDeelnemerRij(e *colly.HTMLElement) (b bool) {
+	//Dit is geen briljant criterium, een losse cel met alleen '.rank-deelnemer' zou nu ook als wedstrijdRij gezien worden
+	return e.ChildText(".rank-deelnemer") != ""
+
+}
+
+func (d deelnemerRij) punten() (int, error) {
 	puntenTekst := d.ChildText("td.punten")
 	strafPunten := d.ChildText("td.punten div")
 	positieZonderPunt, err := strconv.Atoi(strings.ReplaceAll(puntenTekst, strafPunten, ""))
@@ -50,12 +66,12 @@ func (d DeelnemerRij) punten() (int, error) {
 	return positieZonderPunt, nil
 }
 
-func (d DeelnemerRij) teamNaam() string {
+func (d deelnemerRij) teamNaam() string {
 	return strings.TrimSpace(d.ChildText("a"))
 }
 
-func (d DeelnemerRij) id() (int, error) {
-	split := strings.Split(d.ChildAttr("a.links", "href"), "/")
+func (d deelnemerRij) id() (int, error) {
+	split := strings.Split(d.ChildAttr("a", "href"), "/")
 	id, err := strconv.Atoi(split[2])
 
 	if err != nil {

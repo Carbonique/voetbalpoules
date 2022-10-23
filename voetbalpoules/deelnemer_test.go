@@ -32,7 +32,7 @@ func TestNewDeelnemer(t *testing.T) {
 			client.OnHTML("tr", func(e *colly.HTMLElement) {
 
 				fmt.Println(e.Text)
-				rij := DeelnemerRij{e}
+				rij := deelnemerRij{e}
 				result, _ := NewDeelnemer(rij)
 				if !reflect.DeepEqual(tt.expected, result) {
 					fmt.Print("Result: ")
