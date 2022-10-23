@@ -1,4 +1,4 @@
-module github.com/Carbonique/voetbalpoules-messenger
+module github.com/Carbonique/voetbalpoules
 
 go 1.18
 
