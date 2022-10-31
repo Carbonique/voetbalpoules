@@ -18,11 +18,11 @@ type Voorspelling struct {
 	Datum                time.Time
 	ThuisTeam            string
 	UitTeam              string
-	DoelpuntenThuis      int
-	DoelpuntenUit        int
+	DoelpuntenThuis      *int
+	DoelpuntenUit        *int
 	Wvdw                 bool
-	ThuisDoelpuntenMaker string
-	UitDoelpuntenMaker   string
+	ThuisDoelpuntenMaker *string
+	UitDoelpuntenMaker   *string
 }
 
 type voorspellingTabel struct {
@@ -61,7 +61,9 @@ func (v *VoorspellingenService) Get(deelnemerID int, w Wedstrijd) (Voorspelling,
 		rijen := []voorspellingRij{rij}
 		if rij.DOM.HasClass("wvdw") {
 			if i+1 <= len(vRijen) {
-				rijen = append(rijen, vRijen[i+1])
+				if vRijen[i+1].DOM.HasClass("wvdw") {
+					rijen = append(rijen, vRijen[i+1])
+				}
 			}
 		}
 		//we gebruiken tempVoorspelling, omdat we nog moeten checken of dit echt de wedstrijd is die we zoeken
@@ -174,37 +176,47 @@ func (r *voorspellingRij) uitTeam() string {
 	return strings.TrimSpace(team)
 }
 
-func (r *voorspellingRij) thuisDoelpuntenMaker() string {
+func (r *voorspellingRij) thuisDoelpuntenMaker() *string {
 	d := r.ChildText("td:nth-child(2)")
 
-	return d
+	return &d
 }
 
-func (r *voorspellingRij) uitDoelpuntenMaker() string {
+func (r *voorspellingRij) uitDoelpuntenMaker() *string {
 	d := r.ChildText("td:nth-child(3)")
-	return d
+	return &d
 }
 
-func (r *voorspellingRij) doelpuntenThuis() int {
+func (r *voorspellingRij) doelpuntenThuis() *int {
 	rawTekst := r.ChildText("td:nth-child(4)")
+
+	if rawTekst == "" {
+		return nil
+	}
+
 	sanitizedTekst := strings.TrimSpace(strings.ReplaceAll(rawTekst, r.ChildText(".vp-uitslag"), ""))
 	stringGoals := strings.TrimSpace(strings.Split(sanitizedTekst, "-")[0])
 	i, err := strconv.Atoi(stringGoals)
 	if err != nil {
 		log.Panic()
 	}
-	return i
+	return &i
 }
 
-func (r *voorspellingRij) doelpuntenUit() int {
+func (r *voorspellingRij) doelpuntenUit() *int {
 	rawTekst := r.ChildText("td:nth-child(4)")
+
+	if rawTekst == "" {
+		return nil
+	}
+
 	sanitizedTekst := strings.TrimSpace(strings.ReplaceAll(rawTekst, r.ChildText(".vp-uitslag"), ""))
 	stringGoals := strings.TrimSpace(strings.Split(sanitizedTekst, "-")[1])
 	i, err := strconv.Atoi(stringGoals)
 	if err != nil {
 		log.Panic()
 	}
-	return i
+	return &i
 }
 
 func (r *voorspellingRij) wvdw() bool {
