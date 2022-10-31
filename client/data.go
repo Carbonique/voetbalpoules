@@ -48,6 +48,39 @@ var LandALandB = Wedstrijd{
 	UitDoelpuntenMaker:   "",
 }
 
+var LandCLandD = Wedstrijd{
+	Datum:                time.Date(2022, 7, 9, 21, 0, 0, 0, time.Local),
+	Competitie:           competitie,
+	ThuisTeam:            "Land C",
+	UitTeam:              "Land D",
+	Uitslag:              "2 - 1",
+	Wvdw:                 true,
+	ThuisDoelpuntenMaker: "",
+	UitDoelpuntenMaker:   "",
+}
+
+var LandELandF = Wedstrijd{
+	Datum:                time.Date(2022, 7, 9, 21, 0, 0, 0, time.Local),
+	Competitie:           competitie,
+	ThuisTeam:            "Land E",
+	UitTeam:              "Land F",
+	Uitslag:              "2 - 1",
+	Wvdw:                 true,
+	ThuisDoelpuntenMaker: "",
+	UitDoelpuntenMaker:   "",
+}
+
+var LandGLandH = Wedstrijd{
+	Datum:                time.Date(2022, 7, 9, 21, 0, 0, 0, time.Local),
+	Competitie:           competitie,
+	ThuisTeam:            "Land G",
+	UitTeam:              "Land H",
+	Uitslag:              "2 - 0",
+	Wvdw:                 false,
+	ThuisDoelpuntenMaker: "",
+	UitDoelpuntenMaker:   "",
+}
+
 var BelgiëIJsland = Wedstrijd{
 	Datum:                time.Date(2022, 7, 10, 18, 0, 0, 0, time.Local),
 	Competitie:           competitie,
