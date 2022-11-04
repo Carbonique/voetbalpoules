@@ -2,10 +2,18 @@ module github.com/Carbonique/voetbalpoules
 
 go 1.18
 
-require github.com/sirupsen/logrus v1.9.0
+require (
+	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
+	github.com/sirupsen/logrus v1.9.0
+	github.com/spf13/cobra v1.6.1
+	golang.org/x/vuln v0.0.0-20221103225512-4f561ca73b59
+)
 
 require (
-	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
+	github.com/inconshreveable/mousetrap v1.0.1 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
+	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	google.golang.org/protobuf v1.24.0 // indirect
 )
 
