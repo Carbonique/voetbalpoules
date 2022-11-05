@@ -46,7 +46,7 @@ func TestGetDeelnemers(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.description, func(t *testing.T) {
-			result := client.Pool.GetDeelnemers(1, "eredivisie")
+			result := client.pool.getDeelnemers(1, "eredivisie")
 			if !reflect.DeepEqual(tt.expected, result) {
 				fmt.Print("Result: ")
 				fmt.Println(result)
@@ -75,7 +75,7 @@ func TestGetStand(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.description, func(t *testing.T) {
-			result := client.Pool.GetStand(1, "eredivisie")
+			result := client.pool.getStand(1, "eredivisie")
 			if !reflect.DeepEqual(tt.expected, result) {
 				fmt.Print("Result: ")
 				fmt.Println(result)

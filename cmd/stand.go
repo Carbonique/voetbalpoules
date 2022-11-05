@@ -5,7 +5,8 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	voetbalpoulestelegram "github.com/Carbonique/voetbalpoules/pkg/telegram"
+	"fmt"
+
 	voetbalpoules "github.com/Carbonique/voetbalpoules/pkg/voetbalpoules-client"
 	"github.com/spf13/cobra"
 )
@@ -22,9 +23,10 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		client := voetbalpoules.NewClient("https://www.voetbalpoules.nl/")
-		bot := voetbalpoulestelegram.NewBot()
-		deelnemers := client.Pool.GetDeelnemers(18173, "eredivisie")
-		bot.StuurStand(deelnemers)
+		//		bot := voetbalpoulestelegram.NewBot()
+		deelnemers := client.GetStand(18173, "eredivisie")
+		fmt.Printf("deelnemers: %v\n", deelnemers)
+		//		bot.StuurStand(deelnemers)
 	},
 }
 

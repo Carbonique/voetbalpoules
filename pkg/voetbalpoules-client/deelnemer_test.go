@@ -33,7 +33,7 @@ func TestNewDeelnemer(t *testing.T) {
 
 				fmt.Println(e.Text)
 				rij := deelnemerRij{e}
-				result, _ := NewDeelnemer(rij)
+				result, _ := newDeelnemer(rij)
 				if !reflect.DeepEqual(tt.expected, result) {
 					fmt.Print("Result: ")
 					fmt.Println(result)

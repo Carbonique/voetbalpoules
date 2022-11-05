@@ -28,19 +28,13 @@ to quickly create a Cobra application.`,
 
 		t1 := time.Now()
 		t2 := t1.Add(time.Hour * 4)
-		w, err := client.Wedstrijden.Get("eredivisie", t1, t2)
-		if err != nil {
-			fmt.Errorf("Error")
-		}
-		fmt.Printf("w: %v\n", w)
+		vw, _ := client.GetPoolVoorspelling(t1, t2, 18173, "eredivisie")
+		for d, v := range vw[0].DeelnemerVoorspellingen {
+			if v.DoelpuntenThuis != nil && v.DoelpuntenUit != nil {
 
-		d := client.Pool.GetDeelnemers(135352, "eredivisie")
-		var voorspellingen []voetbalpoules.Voorspelling
-		for _, d2 := range d {
-			v, _ := client.Voorspellingen.Get(d2.ID, w[0])
-			voorspellingen = append(voorspellingen, v)
+				fmt.Printf("%s: %d - %d\n", d.Naam, *v.DoelpuntenThuis, *v.DoelpuntenUit)
+			}
 		}
-		bot.StuurUitslag(w[0], voorspellingen)
 	},
 }
 

@@ -3,6 +3,7 @@ package voetbalpoulesclient
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -11,8 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//VoorspellingenService handles communication related to Voorspellingen
-type VoorspellingenService service
+//voorspellingenService handles communication related to Voorspellingen
+type voorspellingenService service
 
 type Voorspelling struct {
 	Datum                time.Time
@@ -30,14 +31,14 @@ type voorspellingTabel struct {
 }
 
 // Get returns a voorspelling for a deelnemer for a wedstrijd
-func (v *VoorspellingenService) Get(deelnemerID int, w Wedstrijd) (Voorspelling, error) {
+func (v *voorspellingenService) get(d Deelnemer, w Wedstrijd) (Voorspelling, error) {
 
 	log.Infof("Trying to get voorspelling for %s - %s", w.ThuisTeam, w.UitTeam)
 
 	var voorspelling Voorspelling
 
 	// First fetch the wedstrijdTabel
-	t, err := v.getVoorspellingTabel(deelnemerID, w)
+	t, err := v.getVoorspellingTabel(d.ID, w)
 	if err != nil {
 		return Voorspelling{}, err
 	}
@@ -68,7 +69,7 @@ func (v *VoorspellingenService) Get(deelnemerID int, w Wedstrijd) (Voorspelling,
 		}
 		//we gebruiken tempVoorspelling, omdat we nog moeten checken of dit echt de wedstrijd is die we zoeken
 		//het kan zijn dat er anders een wedstrijd die op hetzelfde tijdstip start gepakt wordt.
-		tempVoorspelling, err := NewVoorspelling(w.Competitie, v.time, rijen...)
+		tempVoorspelling, err := newVoorspelling(w.Competitie, v.time, rijen...)
 
 		if err != nil {
 			return Voorspelling{}, err
@@ -85,7 +86,7 @@ func (v *VoorspellingenService) Get(deelnemerID int, w Wedstrijd) (Voorspelling,
 }
 
 //getVoorspellingTabel returns the voorspellingtabel for a user
-func (v *VoorspellingenService) getVoorspellingTabel(id int, w Wedstrijd) (voorspellingTabel, error) {
+func (v *voorspellingenService) getVoorspellingTabel(id int, w Wedstrijd) (voorspellingTabel, error) {
 	var elem colly.HTMLElement
 	v.client.OnHTML("table.voorspellingen", func(tabel *colly.HTMLElement) {
 		// maak een voorspellingTabel van tabel, om receiver methods toe te kunnen passen
@@ -125,7 +126,7 @@ func newVoorspellingRij(e *colly.HTMLElement) (voorspellingRij, error) {
 }
 
 //NewVoorspelling creates a voorspelling from a voorspellingrij
-func NewVoorspelling(competitie string, baseDate time.Time, vRij ...voorspellingRij) (Voorspelling, error) {
+func newVoorspelling(competitie string, baseDate time.Time, vRij ...voorspellingRij) (Voorspelling, error) {
 
 	v := Voorspelling{}
 	v.ThuisTeam = vRij[0].thuisTeam()
@@ -192,6 +193,9 @@ func (r *voorspellingRij) doelpuntenThuis() *int {
 	if rawTekst == "-" {
 		return nil
 	}
+	if rawTekst == "" {
+		return nil
+	}
 
 	sanitizedTekst := strings.TrimSpace(strings.ReplaceAll(rawTekst, r.ChildText(".vp-uitslag"), ""))
 	stringGoals := strings.TrimSpace(strings.Split(sanitizedTekst, "-")[0])
@@ -206,6 +210,10 @@ func (r *voorspellingRij) doelpuntenUit() *int {
 	rawTekst := r.ChildText("td:nth-child(4)")
 
 	if rawTekst == "-" {
+		return nil
+	}
+
+	if rawTekst == "" {
 		return nil
 	}
 
@@ -275,5 +283,66 @@ func (r *voorspellingRij) datumCel() (s string, err error) {
 	}
 
 	return cel, err
+
+}
+
+func sorteerVoorspellingen(voorspellingen []Voorspelling) []Voorspelling {
+	log.Info("sorteerVoorspellingen")
+
+	var t []Voorspelling
+	var u []Voorspelling
+	var g []Voorspelling
+	var n []Voorspelling
+
+	for _, v := range voorspellingen {
+		if v.DoelpuntenThuis != nil && v.DoelpuntenUit != nil {
+
+			switch {
+			case *v.DoelpuntenThuis > *v.DoelpuntenUit:
+				t = append(t, v)
+			case *v.DoelpuntenUit > *v.DoelpuntenThuis:
+				u = append(u, v)
+			case *v.DoelpuntenThuis == *v.DoelpuntenUit:
+				g = append(g, v)
+			}
+		} else {
+			n = append(n, v)
+		}
+	}
+	sorteerThuisVoorspellingen(t)
+	sorteerUitVoorspellingen(u)
+	sorteerGelijkspelVoorspellingen(g)
+
+	temp_v := append(append(append(t, u...), g...), n...)
+	return temp_v
+
+}
+
+func sorteerThuisVoorspellingen(v []Voorspelling) {
+	sort.Slice(v, func(i, j int) bool {
+		return *v[i].DoelpuntenThuis < *v[j].DoelpuntenThuis
+	})
+
+	sort.Slice(v, func(i, j int) bool {
+		return *v[i].DoelpuntenUit > *v[j].DoelpuntenUit
+	})
+
+}
+
+func sorteerUitVoorspellingen(v []Voorspelling) {
+	sort.Slice(v, func(i, j int) bool {
+		return *v[i].DoelpuntenUit < *v[j].DoelpuntenUit
+	})
+
+	sort.Slice(v, func(i, j int) bool {
+		return *v[i].DoelpuntenThuis > *v[j].DoelpuntenThuis
+	})
+
+}
+
+func sorteerGelijkspelVoorspellingen(v []Voorspelling) {
+	sort.Slice(v, func(i, j int) bool {
+		return *v[i].DoelpuntenThuis < *v[j].DoelpuntenThuis
+	})
 
 }

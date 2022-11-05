@@ -8,15 +8,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//PoolService handles communication related to Pools
-type PoolService service
+//poolService handles communication related to Pools
+type poolService service
 
 type Pool struct {
 	Deelnemers []Deelnemer
 }
 
 //GetDeelnemers fetches the deelnemers for a pool
-func (p *PoolService) GetDeelnemers(id int, competitie string) []Deelnemer {
+func (p *poolService) getDeelnemers(id int, competitie string) []Deelnemer {
 	deelnemers := []Deelnemer{}
 
 	p.client.OnHTML("table.stand", func(stand *colly.HTMLElement) {
@@ -26,7 +26,7 @@ func (p *PoolService) GetDeelnemers(id int, competitie string) []Deelnemer {
 				return
 			}
 
-			d, err := NewDeelnemer(dRij)
+			d, err := newDeelnemer(dRij)
 			if err != nil {
 				return
 			}
@@ -42,15 +42,15 @@ func (p *PoolService) GetDeelnemers(id int, competitie string) []Deelnemer {
 }
 
 //GetStand returns the stand for a pool
-func (p *PoolService) GetStand(poolID int, competitie string) []Deelnemer {
-	deelnemers := p.GetDeelnemers(poolID, competitie)
-	// In principe return GetDeelnemers een gesorteerde stand op basis van de html tabel,
+func (p *poolService) getStand(poolID int, competitie string) []Deelnemer {
+	deelnemers := p.getDeelnemers(poolID, competitie)
+	// In principe returnt GetDeelnemers een gesorteerde stand op basis van de html tabel,
 	// maar voor de zekerheid sorteren we alsnog
-	return p.SorteerStand(deelnemers)
+	return p.sorteerStand(deelnemers)
 }
 
 //Sort a slice of deelnemers by their points
-func (p *PoolService) SorteerStand(d []Deelnemer) []Deelnemer {
+func (p *poolService) sorteerStand(d []Deelnemer) []Deelnemer {
 	sort.Slice(d, func(i, j int) bool {
 		return d[i].Punten > d[j].Punten
 	})

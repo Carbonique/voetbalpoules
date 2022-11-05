@@ -32,8 +32,8 @@ var VoorspellingDuitslandDenemarken = Voorspelling{
 	Datum:           time.Date(2022, 7, 8, 21, 0, 0, 0, time.Local),
 	ThuisTeam:       "Duitsland",
 	UitTeam:         "Denemarken",
-	DoelpuntenThuis: intPointer(1),
-	DoelpuntenUit:   intPointer(0),
+	DoelpuntenThuis: intPointer(0),
+	DoelpuntenUit:   intPointer(1),
 	Wvdw:            false,
 }
 
@@ -81,6 +81,34 @@ var VoorspellingNederlandZweden = Voorspelling{
 	Wvdw:                 true,
 	ThuisDoelpuntenMaker: stringPointer("Miedema"),
 	UitDoelpuntenMaker:   stringPointer("Blackstenius"),
+}
+
+func TestSoorteerVoorspellingen(t *testing.T) {
+	ongesoorteerdeVoorspellingen := []Voorspelling{
+		VoorspellingNederlandZweden,
+		VoorspellingLandALandB,
+		VoorspellingDuitslandDenemarken,
+		VoorspellingNoorwegenNoordIerland,
+	}
+
+	expectedLijst := []Voorspelling{
+		VoorspellingNederlandZweden,
+		VoorspellingNoorwegenNoordIerland,
+		VoorspellingDuitslandDenemarken,
+		VoorspellingLandALandB,
+	}
+
+	gesorteerdeLijst := sorteerVoorspellingen(ongesoorteerdeVoorspellingen)
+
+	for i := range gesorteerdeLijst {
+		if !reflect.DeepEqual(gesorteerdeLijst[i], expectedLijst[i]) {
+			fmt.Print("Result: ")
+			fmt.Println(gesorteerdeLijst[i])
+			fmt.Print("Expected: ")
+			fmt.Println(expectedLijst[i])
+			t.Error("Is not equal")
+		}
+	}
 }
 
 func TestGetVoorspellingen(t *testing.T) {
@@ -141,7 +169,7 @@ func TestGetVoorspellingen(t *testing.T) {
 	for _, tt := range cases {
 		t.Run(tt.description, func(t *testing.T) {
 			client.time = tt.baseTime
-			result, _ := client.Voorspellingen.Get(1, tt.w)
+			result, _ := client.voorspellingen.get(Deelnemer{ID: 1}, tt.w)
 			if !reflect.DeepEqual(tt.expected, result) {
 				fmt.Print("Result: ")
 				fmt.Println(result)
@@ -327,9 +355,9 @@ func newVoorspellingenTestServer() *httptest.Server {
 	</td>
 	<td class="nowrap">
 
-	1
-		-
 	0
+		-
+	1
 						<div class="vp-uitslag">
 					4 - 0
 			</div>

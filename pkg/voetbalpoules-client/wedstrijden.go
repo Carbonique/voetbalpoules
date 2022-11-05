@@ -11,8 +11,8 @@ import (
 	"github.com/gocolly/colly/v2"
 )
 
-//WedstrijdService handles communication related to Wedstrijden
-type WedstrijdService service
+//wedstrijdService handles communication related to Wedstrijden
+type wedstrijdService service
 
 type Wedstrijd struct {
 	Datum                time.Time
@@ -26,7 +26,7 @@ type Wedstrijd struct {
 }
 
 // Get returns Wedstrijden for a Competitie within a specified timerange
-func (w *WedstrijdService) Get(competitie string, t1 time.Time, t2 time.Time) ([]Wedstrijd, error) {
+func (w *wedstrijdService) get(competitie string, t1 time.Time, t2 time.Time) ([]Wedstrijd, error) {
 
 	var wedstrijden []Wedstrijd
 	var wedstrijd Wedstrijd
@@ -59,7 +59,7 @@ func (w *WedstrijdService) Get(competitie string, t1 time.Time, t2 time.Time) ([
 			}
 		}
 
-		wedstrijd, err = NewWedstrijd(competitie, w.time, rijen...)
+		wedstrijd, err = newWedstrijd(competitie, w.time, rijen...)
 
 		if err != nil {
 			return []Wedstrijd{}, err
@@ -76,7 +76,7 @@ type wedstrijdTabel struct {
 }
 
 //getWedstrijdTabel returns the wedstrijdTabel for a competitie
-func (w *WedstrijdService) getWedstrijdTabel(c string) (wedstrijdTabel, error) {
+func (w *wedstrijdService) getWedstrijdTabel(c string) (wedstrijdTabel, error) {
 	var elem colly.HTMLElement
 	w.client.OnHTML("table.wedstrijden", func(tabel *colly.HTMLElement) {
 		// maak een wedstrijdTabel van tabel, om receiver methods toe te kunnen passen
@@ -125,7 +125,7 @@ func newWedstrijdRij(e *colly.HTMLElement) (wedstrijdRij, error) {
 }
 
 //NewWedstrijd creates a Wedstrijd from a wedstrijdrij
-func NewWedstrijd(competitie string, vandaag time.Time, wRij ...wedstrijdRij) (Wedstrijd, error) {
+func newWedstrijd(competitie string, vandaag time.Time, wRij ...wedstrijdRij) (Wedstrijd, error) {
 
 	w := Wedstrijd{}
 	w.ThuisTeam = wRij[0].thuisTeam()

@@ -21,7 +21,7 @@ type deelnemerRij struct {
 	*colly.HTMLElement
 }
 
-func NewDeelnemer(d deelnemerRij) (Deelnemer, error) {
+func newDeelnemer(d deelnemerRij) (Deelnemer, error) {
 
 	punten, err := d.punten()
 	if err != nil {

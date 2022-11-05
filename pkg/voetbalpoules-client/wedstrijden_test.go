@@ -56,7 +56,7 @@ func TestWedstrijdenGet(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.description, func(t *testing.T) {
-			result, _ := client.Wedstrijden.Get(tt.competitie, tt.t1, tt.t2)
+			result, _ := client.wedstrijden.get(tt.competitie, tt.t1, tt.t2)
 			if !reflect.DeepEqual(tt.expected, result) {
 				fmt.Print("Result: ")
 				fmt.Println(result)
