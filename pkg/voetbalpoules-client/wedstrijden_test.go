@@ -39,6 +39,13 @@ func TestWedstrijdenGet(t *testing.T) {
 			expected:    []Wedstrijd{PortugalZwitserland, NederlandZweden},
 		},
 		{
+			description: "Wedstrijd gisteren in tijdsrange (t2 ouder dan t1)",
+			competitie:  competitie,
+			t1:          time.Date(2022, 7, 9, 21, 45, 0, 0, time.Local),
+			t2:          time.Date(2022, 7, 9, 17, 45, 0, 0, time.Local),
+			expected:    []Wedstrijd{PortugalZwitserland, NederlandZweden},
+		},
+		{
 			description: "Wedstrijden vandaag",
 			competitie:  competitie,
 			t1:          time.Date(2022, 7, 10, 00, 00, 0, 0, time.Local),

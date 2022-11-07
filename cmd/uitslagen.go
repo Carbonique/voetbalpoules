@@ -5,7 +5,6 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
 	"time"
 
 	voetbalpoules "github.com/Carbonique/voetbalpoules/pkg/voetbalpoules-client"
@@ -26,15 +25,11 @@ to quickly create a Cobra application.`,
 		client := voetbalpoules.NewClient("https://www.voetbalpoules.nl/")
 		//bot := voetbalpoulestelegram.NewBot()
 
-		t1 := time.Now()
-		t2 := t1.Add(time.Hour * 4)
+		t2 := time.Now()
+		t1 := t2.Add(time.Hour * -4)
 		vw, _ := client.GetPoolVoorspelling(t1, t2, 18173, "eredivisie")
-		for d, v := range vw[0].DeelnemerVoorspellingen {
-			if v.DoelpuntenThuis != nil && v.DoelpuntenUit != nil {
+		voetbalpoulesTelegram.Test(vw[0])
 
-				fmt.Printf("%s: %d - %d\n", d.Naam, *v.DoelpuntenThuis, *v.DoelpuntenUit)
-			}
-		}
 	},
 }
 

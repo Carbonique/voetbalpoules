@@ -3,7 +3,6 @@ package voetbalpoulesclient
 import (
 	"fmt"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -283,66 +282,5 @@ func (r *voorspellingRij) datumCel() (s string, err error) {
 	}
 
 	return cel, err
-
-}
-
-func sorteerVoorspellingen(voorspellingen []Voorspelling) []Voorspelling {
-	log.Info("sorteerVoorspellingen")
-
-	var t []Voorspelling
-	var u []Voorspelling
-	var g []Voorspelling
-	var n []Voorspelling
-
-	for _, v := range voorspellingen {
-		if v.DoelpuntenThuis != nil && v.DoelpuntenUit != nil {
-
-			switch {
-			case *v.DoelpuntenThuis > *v.DoelpuntenUit:
-				t = append(t, v)
-			case *v.DoelpuntenUit > *v.DoelpuntenThuis:
-				u = append(u, v)
-			case *v.DoelpuntenThuis == *v.DoelpuntenUit:
-				g = append(g, v)
-			}
-		} else {
-			n = append(n, v)
-		}
-	}
-	sorteerThuisVoorspellingen(t)
-	sorteerUitVoorspellingen(u)
-	sorteerGelijkspelVoorspellingen(g)
-
-	temp_v := append(append(append(t, u...), g...), n...)
-	return temp_v
-
-}
-
-func sorteerThuisVoorspellingen(v []Voorspelling) {
-	sort.Slice(v, func(i, j int) bool {
-		return *v[i].DoelpuntenThuis < *v[j].DoelpuntenThuis
-	})
-
-	sort.Slice(v, func(i, j int) bool {
-		return *v[i].DoelpuntenUit > *v[j].DoelpuntenUit
-	})
-
-}
-
-func sorteerUitVoorspellingen(v []Voorspelling) {
-	sort.Slice(v, func(i, j int) bool {
-		return *v[i].DoelpuntenUit < *v[j].DoelpuntenUit
-	})
-
-	sort.Slice(v, func(i, j int) bool {
-		return *v[i].DoelpuntenThuis > *v[j].DoelpuntenThuis
-	})
-
-}
-
-func sorteerGelijkspelVoorspellingen(v []Voorspelling) {
-	sort.Slice(v, func(i, j int) bool {
-		return *v[i].DoelpuntenThuis < *v[j].DoelpuntenThuis
-	})
 
 }

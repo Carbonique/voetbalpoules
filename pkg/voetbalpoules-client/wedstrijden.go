@@ -233,7 +233,24 @@ func (r *wedstrijdRij) datumCel() (s string, err error) {
 
 }
 
-func inTimeSpan(start, end, check time.Time) bool {
+func inTimeSpan(t1 time.Time, t2 time.Time, check time.Time) bool {
+	var start time.Time
+	var end time.Time
+
+	switch {
+	case t1.Before(t2):
+		start = t1
+		end = t2
+
+	case t1.After(t2):
+		start = t2
+		end = t1
+
+	case t1.Equal(t2):
+		start = t1
+		end = t2
+	}
+
 	log.Debugf("Checking if %s is within %s and %s", check.String(), start.String(), end.String())
 	if start.Before(end) {
 		return !check.Before(start) && !check.After(end)
