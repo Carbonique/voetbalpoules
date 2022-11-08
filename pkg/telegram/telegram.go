@@ -39,7 +39,7 @@ func NewBot(token string, chat int64) *Bot {
 	return &b
 }
 
-func (bot *Bot) verzend(b *bericht) {
+func (bot *Bot) verzend(b bericht) {
 
 	msg := tgbotapi.NewMessage(bot.chat, b.titel+"\n"+b.inhoud)
 	msg.ParseMode = "Markdown"
@@ -54,40 +54,48 @@ func (bot *Bot) StuurStand(deelnemers []voetbalpoules.Deelnemer) {
 	bot.verzend(bericht)
 }
 
-func newStandBericht(deelnemers []voetbalpoules.Deelnemer) *bericht {
+func newStandBericht(deelnemers []voetbalpoules.Deelnemer) bericht {
 	b := bericht{}
 	dag := strconv.Itoa(time.Now().Day())
 	maand := strconv.Itoa(int(time.Now().Month()))
-	b.titel = fmt.Sprintf("*Stand %s - %s :*\n", dag, maand)
+	b.titel = fmt.Sprintf("*Stand %s - %s:*\n", dag, maand)
 
 	for i, d := range deelnemers {
 		stand := fmt.Sprintf("%d. %s %d (+%d) \n", i+1, d.Naam, d.Punten, d.PuntenRonde)
 		b.inhoud = b.inhoud + stand
 	}
-	return &b
+	return b
 }
 
-//func (bot *Bot) StuurUitslag(vw voetbalpoules.VoorspeldeWedstrijd) {
-//
-//	bericht := newUitslagBericht(vw.DeelnemerVoorspellingen)
-//	bot.verzend(bericht)
-//}
+func (bot *Bot) StuurVoorspelling(vw voetbalpoules.VoorspeldeWedstrijd) {
 
-func TestBerichtInhoud(vw voetbalpoules.VoorspeldeWedstrijd) {
-
-	uitslagBerichtInhoud(vw.DeelnemerVoorspellingen)
-
+	bericht := newVoorspellingBericht(vw)
+	bot.verzend(bericht)
 }
 
-//
-//func newUitslagBericht(vw voetbalpoules.VoorspeldeWedstrijd) *bericht {
-//	b := bericht{}
-//
-//	b.titel = uitslagBerichtTitel(vw.Wedstrijd)
-//	b.inhoud = uitslagBerichtInhoud(vw.DeelnemerVoorspellingen)
-//
-//	return &b
-//}
+func newVoorspellingBericht(vw voetbalpoules.VoorspeldeWedstrijd) bericht {
+	b := bericht{}
+
+	b.titel = voorspellingBerichtTitel(vw.Wedstrijd)
+	b.inhoud = voorspellingenBericht(vw)
+
+	return b
+}
+
+func (bot *Bot) StuurUitslag(vw voetbalpoules.VoorspeldeWedstrijd) {
+
+	bericht := newUitslagBericht(vw)
+	bot.verzend(bericht)
+}
+
+func newUitslagBericht(vw voetbalpoules.VoorspeldeWedstrijd) bericht {
+	b := bericht{}
+
+	b.titel = uitslagBerichtTitel(vw.Wedstrijd)
+	b.inhoud = voorspellingenBericht(vw)
+
+	return b
+}
 
 func uitslagBerichtTitel(w voetbalpoules.Wedstrijd) string {
 	uur := strconv.Itoa(w.Datum.Hour())
@@ -106,55 +114,74 @@ func uitslagBerichtTitel(w voetbalpoules.Wedstrijd) string {
 
 }
 
-func uitslagBerichtInhoud(m map[voetbalpoules.Deelnemer]voetbalpoules.Voorspelling) {
-	//gesorteerdeVoorspellingen := voetbalpoules.SorteerVoorspellingen(v)
-	//wr := bepaalWitRegels(v)
-	//inhoud := voorspellingenToString(gesorteerdeVoorspellingen, wr, false)
-	s := sortDeelnemers(m)
-	for _, v := range s {
-		fmt.Println(m[v])
+func voorspellingBerichtTitel(w voetbalpoules.Wedstrijd) string {
+	uur := strconv.Itoa(w.Datum.Hour())
+	minuut := strconv.Itoa(w.Datum.Minute())
+
+	if minuut == "0" {
+		minuut = minuut + "0"
 	}
-	//	return inhoud
+
+	titel := fmt.Sprintf("*Voorspelling:\n %s - %s %s:%s*\n", w.ThuisTeam, w.UitTeam, uur, minuut)
+
+	return titel
+
 }
 
-//func voorspellingenToString(v []voetbalpoules.Voorspelling, witregels []int, gebruikerAlsHyperlink bool) string {
-//	var voorspellingenTekst string
-//
-//	for i, v := range v {
-//
-//		if v.DoelpuntenThuis == nil && v.DoelpuntenUit == nil {
-//			return "(Niet ingevuld)"
-//		}
-//
-//		uitslag := fmt.Sprintf("(%s - %s)", v.DoelpuntenThuis, v.DoelpuntenUit)
-//		deelnemer := v
-//
-//		if gebruikerAlsHyperlink {
-//			deelnemer = "[" + v.Deelnemer.naam + "](" + baseUrl + "deelnemer/" + strconv.Itoa(v.Deelnemer.id) + "/voorspellingen/" + w.Competitie + "/" + w.RondeSubDirectory + ")"
-//		}
-//
-//		var doelpuntenMakers string
-//		if w.Wvdw {
-//			doelpuntenMakers = v.getDoelpuntenMakers()
-//		}
-//
-//		voorspellingTekst := deelnemer + " " + uitslag + " " + doelpuntenMakers
-//		//Als er een witregel moet komen
-//		if contains(witregels, i) {
-//			voorspellingTekst = voorspellingTekst + "\n"
-//		}
-//		voorspellingenTekst = voorspellingenTekst + voorspellingTekst + "\n"
-//
-//	}
-//	return voorspellingenTekst
-//}
+func voorspellingenBericht(vw voetbalpoules.VoorspeldeWedstrijd) string {
+	gesorteerdeDeelnemers := sortDeelnemers(vw.DeelnemerVoorspellingen)
+	wr := bepaalWitRegels(vw.DeelnemerVoorspellingen)
 
-func bepaalWitRegels(v []voetbalpoules.Voorspelling) []int {
+	inhoud := voorspellingenToString(vw, gesorteerdeDeelnemers, wr)
+
+	return inhoud
+}
+
+func voorspellingenToString(vw voetbalpoules.VoorspeldeWedstrijd, volgorde []voetbalpoules.Deelnemer, witregels []int) string {
+	var voorspellingenTekst string
+	m := vw.DeelnemerVoorspellingen
+
+	for i, d := range volgorde {
+		var uitslag string
+		if m[d].DoelpuntenThuis == nil && m[d].DoelpuntenUit == nil {
+			uitslag = "(Niet ingevuld)"
+		} else {
+			uitslag = fmt.Sprintf("(%d - %d)", *m[d].DoelpuntenThuis, *m[d].DoelpuntenUit)
+		}
+		deelnemer := d.Naam
+
+		var doelpuntenMakers string
+		if vw.Wedstrijd.Wvdw {
+			var thuisDoelpuntenMaker string
+			var uitDoelpuntenMaker string
+			if m[d].ThuisDoelpuntenMaker == nil && m[d].UitDoelpuntenMaker == nil {
+				thuisDoelpuntenMaker = "Niet ingevuld"
+				uitDoelpuntenMaker = "Niet ingevuld"
+			} else {
+				thuisDoelpuntenMaker = *m[d].ThuisDoelpuntenMaker
+				uitDoelpuntenMaker = *m[d].UitDoelpuntenMaker
+			}
+			doelpuntenMakers = fmt.Sprintf("(%s - %s", thuisDoelpuntenMaker, uitDoelpuntenMaker)
+		}
+
+		voorspellingTekst := fmt.Sprintf("%s %s %s", deelnemer, uitslag, doelpuntenMakers)
+
+		//Als er een witregel moet komen
+		if contains(witregels, i) {
+			voorspellingTekst = voorspellingTekst + "\n"
+		}
+		voorspellingenTekst = voorspellingenTekst + voorspellingTekst + "\n"
+	}
+
+	return voorspellingenTekst
+}
+
+func bepaalWitRegels(m map[voetbalpoules.Deelnemer]voetbalpoules.Voorspelling) []int {
 	var t int
 	var u int
 	var g int
 
-	for _, v := range v {
+	for _, v := range m {
 		if v.DoelpuntenThuis != nil && v.DoelpuntenUit != nil {
 
 			switch {
