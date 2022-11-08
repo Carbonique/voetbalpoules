@@ -26,7 +26,7 @@ A voetbalpoules-client can be found in `pkg/voetbalpoules-client`. The client sc
 ## telegram
 
 A Telegram voetbalpoules client can be found in `pkg/telegram`.
-The Telegram client formats the voetbalpoules structs and sends the nicely formatted data to a Telegram chat.
+The Telegram client formats the voetbalpoules structs and sends the nicely formatted messages to a Telegram chat.
 
 ## cmd
 
