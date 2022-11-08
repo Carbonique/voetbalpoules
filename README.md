@@ -30,4 +30,4 @@ The Telegram client formats the voetbalpoules structs and sends the nicely forma
 
 ## cmd
 
-The voetbalpoules-client and Telegram client are glued together by the spf13 Cobra library.
+The voetbalpoules-client and Telegram client are glued together in the `cmd` directory commands using the spf13 Cobra library.
