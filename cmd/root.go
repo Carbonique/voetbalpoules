@@ -8,23 +8,20 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-
+var BASE_URL string
+var TOKEN string
+var CHAT int64
+var COMPETITIE string
+var POOL_ID int
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "client",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Short: "A client to send voetbalpoules pool info to Telegram",
+	Long:  ``,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -37,15 +34,15 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.client.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	viper.SetConfigFile(".env")
+	viper.ReadInConfig()
+
+	rootCmd.PersistentFlags().StringVar(&BASE_URL, "BASE_URL", viper.GetString("BASE_URL"), "Base url")
+	rootCmd.PersistentFlags().StringVar(&TOKEN, "TOKEN", viper.GetString("TOKEN"), "Telegram token")
+	rootCmd.PersistentFlags().Int64Var(&CHAT, "CHAT", viper.GetInt64("CHAT"), "Telegram chat")
+	rootCmd.PersistentFlags().StringVar(&COMPETITIE, "COMPETITIE", viper.GetString("COMPETITIE"), "voetbalpoules competitie name")
+	rootCmd.PersistentFlags().IntVar(&POOL_ID, "POOL_ID", viper.GetInt("POOL_ID"), "voetbalpoules pool id")
+
 }
-
-

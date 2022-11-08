@@ -83,34 +83,6 @@ var VoorspellingNederlandZweden = Voorspelling{
 	UitDoelpuntenMaker:   stringPointer("Blackstenius"),
 }
 
-func TestSoorteerVoorspellingen(t *testing.T) {
-	ongesoorteerdeVoorspellingen := []Voorspelling{
-		VoorspellingNederlandZweden,
-		VoorspellingLandALandB,
-		VoorspellingDuitslandDenemarken,
-		VoorspellingNoorwegenNoordIerland,
-	}
-
-	expectedLijst := []Voorspelling{
-		VoorspellingNederlandZweden,
-		VoorspellingNoorwegenNoordIerland,
-		VoorspellingDuitslandDenemarken,
-		VoorspellingLandALandB,
-	}
-
-	gesorteerdeLijst := sorteerVoorspellingen(ongesoorteerdeVoorspellingen)
-
-	for i := range gesorteerdeLijst {
-		if !reflect.DeepEqual(gesorteerdeLijst[i], expectedLijst[i]) {
-			fmt.Print("Result: ")
-			fmt.Println(gesorteerdeLijst[i])
-			fmt.Print("Expected: ")
-			fmt.Println(expectedLijst[i])
-			t.Error("Is not equal")
-		}
-	}
-}
-
 func TestGetVoorspellingen(t *testing.T) {
 	ts := newVoorspellingenTestServer()
 	defer ts.Close()

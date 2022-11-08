@@ -67,17 +67,17 @@ func newStandBericht(deelnemers []voetbalpoules.Deelnemer) bericht {
 	return b
 }
 
-func (bot *Bot) StuurVoorspelling(vw voetbalpoules.VoorspeldeWedstrijd) {
+func (bot *Bot) StuurVoorspelling(vw voetbalpoules.VoorspeldeWedstrijd, voetbalpoulesBaseUrl string) {
 
-	bericht := newVoorspellingBericht(vw)
+	bericht := newVoorspellingBericht(vw, voetbalpoulesBaseUrl)
 	bot.verzend(bericht)
 }
 
-func newVoorspellingBericht(vw voetbalpoules.VoorspeldeWedstrijd) bericht {
+func newVoorspellingBericht(vw voetbalpoules.VoorspeldeWedstrijd, voetbalpoulesBaseUrl string) bericht {
 	b := bericht{}
 
 	b.titel = voorspellingBerichtTitel(vw.Wedstrijd)
-	b.inhoud = voorspellingenBericht(vw)
+	b.inhoud = voorspellingenBericht(vw, true, voetbalpoulesBaseUrl)
 
 	return b
 }
@@ -92,7 +92,7 @@ func newUitslagBericht(vw voetbalpoules.VoorspeldeWedstrijd) bericht {
 	b := bericht{}
 
 	b.titel = uitslagBerichtTitel(vw.Wedstrijd)
-	b.inhoud = voorspellingenBericht(vw)
+	b.inhoud = voorspellingenBericht(vw, false, "")
 
 	return b
 }
@@ -105,7 +105,7 @@ func uitslagBerichtTitel(w voetbalpoules.Wedstrijd) string {
 		minuut = minuut + "0"
 	}
 
-	titel := fmt.Sprintf("*Uitslag:\n %s - %s (%s) %s:%s*\n", w.ThuisTeam, w.UitTeam, w.Uitslag, uur, minuut)
+	titel := fmt.Sprintf("*Uitslag:\n%s - %s (%s) %s:%s*\n", w.ThuisTeam, w.UitTeam, w.Uitslag, uur, minuut)
 
 	if w.Wvdw {
 		titel = fmt.Sprintf("%s (%s - %s \n", titel, w.ThuisDoelpuntenMaker, w.UitDoelpuntenMaker)
@@ -122,22 +122,22 @@ func voorspellingBerichtTitel(w voetbalpoules.Wedstrijd) string {
 		minuut = minuut + "0"
 	}
 
-	titel := fmt.Sprintf("*Voorspelling:\n %s - %s %s:%s*\n", w.ThuisTeam, w.UitTeam, uur, minuut)
+	titel := fmt.Sprintf("*Voorspelling:\n%s - %s %s:%s*\n", w.ThuisTeam, w.UitTeam, uur, minuut)
 
 	return titel
 
 }
 
-func voorspellingenBericht(vw voetbalpoules.VoorspeldeWedstrijd) string {
+func voorspellingenBericht(vw voetbalpoules.VoorspeldeWedstrijd, deelnemerAlsHyperlink bool, voetbalpoulesBaseUrl string) string {
 	gesorteerdeDeelnemers := sortDeelnemers(vw.DeelnemerVoorspellingen)
 	wr := bepaalWitRegels(vw.DeelnemerVoorspellingen)
 
-	inhoud := voorspellingenToString(vw, gesorteerdeDeelnemers, wr)
+	inhoud := voorspellingenToString(vw, gesorteerdeDeelnemers, wr, deelnemerAlsHyperlink, voetbalpoulesBaseUrl)
 
 	return inhoud
 }
 
-func voorspellingenToString(vw voetbalpoules.VoorspeldeWedstrijd, volgorde []voetbalpoules.Deelnemer, witregels []int) string {
+func voorspellingenToString(vw voetbalpoules.VoorspeldeWedstrijd, volgorde []voetbalpoules.Deelnemer, witregels []int, deelnemerAlsHyperlink bool, voetbalpoulesBaseUrl string) string {
 	var voorspellingenTekst string
 	m := vw.DeelnemerVoorspellingen
 
@@ -149,6 +149,10 @@ func voorspellingenToString(vw voetbalpoules.VoorspeldeWedstrijd, volgorde []voe
 			uitslag = fmt.Sprintf("(%d - %d)", *m[d].DoelpuntenThuis, *m[d].DoelpuntenUit)
 		}
 		deelnemer := d.Naam
+
+		if deelnemerAlsHyperlink {
+			deelnemer = fmt.Sprintf("[%s](%s/deelnemer/%d/voorspellingen/%s)", d.Naam, voetbalpoulesBaseUrl, d.ID, vw.Wedstrijd.Competitie)
+		}
 
 		var doelpuntenMakers string
 		if vw.Wedstrijd.Wvdw {
