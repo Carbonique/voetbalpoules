@@ -124,7 +124,7 @@ func newWedstrijdRij(e *colly.HTMLElement) (wedstrijdRij, error) {
 	return wedstrijdRij{e}, nil
 }
 
-//NewWedstrijd creates a Wedstrijd from a wedstrijdrij
+//newWedstrijd creates a Wedstrijd from a wedstrijdrij
 func newWedstrijd(competitie string, vandaag time.Time, wRij ...wedstrijdRij) (Wedstrijd, error) {
 
 	w := Wedstrijd{}

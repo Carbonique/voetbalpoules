@@ -21,6 +21,7 @@ type deelnemerRij struct {
 	*colly.HTMLElement
 }
 
+//newDeelnemer creates a Deelnemer from a deelnemerRij
 func newDeelnemer(d deelnemerRij) (Deelnemer, error) {
 
 	punten, err := d.punten()
@@ -38,13 +39,13 @@ func newDeelnemer(d deelnemerRij) (Deelnemer, error) {
 		return Deelnemer{}, err
 	}
 
-	teamNaam := d.teamNaam()
+	naam := d.naam()
 
 	deelnemer := Deelnemer{}
 	deelnemer.Punten = punten
 	deelnemer.PuntenRonde = puntenRonde
 	deelnemer.ID = id
-	deelnemer.Naam = teamNaam
+	deelnemer.Naam = naam
 
 	return deelnemer, nil
 }
@@ -56,12 +57,15 @@ func newDeelnemerRij(e *colly.HTMLElement) (deelnemerRij, error) {
 	}
 	return deelnemerRij{e}, nil
 }
+
+//isDeelnemerRij returns true if the colly.HTMLElement is a deelnemerrij
 func isDeelnemerRij(e *colly.HTMLElement) (b bool) {
 	//Dit is geen briljant criterium, een losse cel met alleen '.rank-deelnemer' zou nu ook als wedstrijdRij gezien worden
 	return e.ChildText(".rank-deelnemer") != ""
 
 }
 
+//punten gets the total points for a deelnemer
 func (d deelnemerRij) punten() (int, error) {
 	puntenTekst := d.ChildText("td.punten")
 	strafPunten := d.ChildText("td.punten div")
@@ -74,6 +78,7 @@ func (d deelnemerRij) punten() (int, error) {
 	return puntenZonderPunt, nil
 }
 
+//puntenRonde gets the points for a round for a deelnemer
 func (d deelnemerRij) puntenRonde() (int, error) {
 	puntenTekst := d.ChildText("td:last-child")
 
@@ -88,10 +93,12 @@ func (d deelnemerRij) puntenRonde() (int, error) {
 	return puntenRonde, nil
 }
 
-func (d deelnemerRij) teamNaam() string {
+//naam gets the naam for a deelnemer
+func (d deelnemerRij) naam() string {
 	return strings.TrimSpace(d.ChildText("a"))
 }
 
+//id gets the id for a deelnemer
 func (d deelnemerRij) id() (int, error) {
 	split := strings.Split(d.ChildAttr("a", "href"), "/")
 	id, err := strconv.Atoi(split[2])
