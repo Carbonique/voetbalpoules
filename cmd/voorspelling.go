@@ -21,7 +21,7 @@ var voorspellingCmd = &cobra.Command{
 		client := voetbalpoules.NewClient(BASE_URL)
 		bot := voetbalpoulestelegram.NewBot(TOKEN, CHAT)
 		t1 := time.Now()
-		t2 := t1.Add(time.Hour * 48)
+		t2 := t1.Add(time.Minute * 65)
 		vw, _ := client.GetPoolVoorspelling(t1, t2, POOL_ID, COMPETITIE)
 
 		for _, vw2 := range vw {

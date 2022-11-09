@@ -29,6 +29,10 @@ type voorspellingTabel struct {
 	*colly.HTMLElement
 }
 
+type voorspellingRij struct {
+	*colly.HTMLElement
+}
+
 // Get returns a voorspelling for a deelnemer for a wedstrijd
 func (v *voorspellingenService) get(d Deelnemer, w Wedstrijd) (Voorspelling, error) {
 
@@ -98,10 +102,7 @@ func (v *voorspellingenService) getVoorspellingTabel(id int, w Wedstrijd) (voors
 	return voorspellingTabel{&elem}, nil
 }
 
-type voorspellingRij struct {
-	*colly.HTMLElement
-}
-
+//getVoorspellingRijen fetches the rows from a voorspellingTabel containing info on voorspellingen
 func (v voorspellingTabel) getVoorspellingRijen() []voorspellingRij {
 	rij := "tr:not(:first-child)"
 	var vRijen []voorspellingRij
@@ -124,7 +125,7 @@ func newVoorspellingRij(e *colly.HTMLElement) (voorspellingRij, error) {
 	return voorspellingRij{e}, nil
 }
 
-//NewVoorspelling creates a voorspelling from a voorspellingrij
+//newVoorspelling creates a voorspelling from a voorspellingrij
 func newVoorspelling(competitie string, baseDate time.Time, vRij ...voorspellingRij) (Voorspelling, error) {
 
 	v := Voorspelling{}

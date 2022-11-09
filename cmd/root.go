@@ -36,13 +36,26 @@ func Execute() {
 func init() {
 
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
 	viper.SetConfigFile(".env")
 	viper.ReadInConfig()
 
-	rootCmd.PersistentFlags().StringVar(&BASE_URL, "BASE_URL", viper.GetString("BASE_URL"), "Base url")
-	rootCmd.PersistentFlags().StringVar(&TOKEN, "TOKEN", viper.GetString("TOKEN"), "Telegram token")
-	rootCmd.PersistentFlags().Int64Var(&CHAT, "CHAT", viper.GetInt64("CHAT"), "Telegram chat")
-	rootCmd.PersistentFlags().StringVar(&COMPETITIE, "COMPETITIE", viper.GetString("COMPETITIE"), "voetbalpoules competitie name")
-	rootCmd.PersistentFlags().IntVar(&POOL_ID, "POOL_ID", viper.GetInt("POOL_ID"), "voetbalpoules pool id")
+	viper.AutomaticEnv()
+	var base_url string
+	if viper.GetString("BASE_URL") == "" {
+		base_url = "https://voetbalpoules.nl"
+	} else {
+		base_url = viper.GetString("BASE_URL")
+	}
+	token := viper.GetString("TOKEN")
+	chat := viper.GetInt64("CHAT")
+	competitie := viper.GetString("COMPETITIE")
+	pool_id := viper.GetInt("POOL_ID")
+
+	rootCmd.PersistentFlags().StringVar(&BASE_URL, "BASE_URL", base_url, "Base url")
+	rootCmd.PersistentFlags().StringVar(&TOKEN, "TOKEN", token, "Telegram token")
+	rootCmd.PersistentFlags().Int64Var(&CHAT, "CHAT", chat, "Telegram chat")
+	rootCmd.PersistentFlags().StringVar(&COMPETITIE, "COMPETITIE", competitie, "voetbalpoules competitie name")
+	rootCmd.PersistentFlags().IntVar(&POOL_ID, "POOL_ID", pool_id, "voetbalpoules pool id")
 
 }
