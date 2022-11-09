@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -37,7 +38,13 @@ func init() {
 
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	viper.SetConfigFile(".env")
+	//Fetch the path of the binary/executable
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	exPath := filepath.Dir(ex)
+	viper.SetConfigFile(exPath + "/.env")
 	viper.ReadInConfig()
 
 	viper.AutomaticEnv()

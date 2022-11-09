@@ -1,0 +1,86 @@
+- hosts: all
+
+  vars:
+    binary_url: "https://github.com/Carbonique/voetbalpoules/releases/download/0.0.2/voetbalpoules-0.0.2-linux-arm64.tar.gz"
+    directory: "/home/{{ user }}/voetbalpoules"
+
+  tasks:
+    - name: Create directory if not exists
+      ansible.builtin.file:
+        path: '{{ directory }}'
+        state: directory
+        mode: '0755'
+
+    - name: Download and unarchive binary
+      ansible.builtin.unarchive:
+        src: "{{ binary_url }}"
+        dest: "{{ directory }}"
+        remote_src: yes
+
+    - name: Check if .env file exists on Ansible controller
+      delegate_to: localhost
+      stat:
+        path: "{{ playbook_dir }}/.env"
+      register: env_file
+
+    - name: Copy .env file
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/.env"
+        dest: "{{ directory }}"
+      when: env_file.stat.exists
+
+    - name: Install wedstrijd voorspellingen vooraf cron
+      ansible.builtin.cron:
+        name: "Wedstrijd voorspellingen vooraf"
+        minute: "30"
+        hour: "19"
+        job: "{{ directory }}/voetbalpoules voorspelling"
+
+    - name: Install wedstrijd voorspellingen definitief cron
+      ansible.builtin.cron:
+        name: "Wedstrijd voorspellingen definitief"
+        minute: "0"
+        hour: "20"
+        job: "{{ directory }}/voetbalpoules voorspelling"
+
+    - name: Install wedstrijd uitslag cron
+      ansible.builtin.cron:
+        name: "Wedstrijd uitslag"
+        minute: "15"
+        hour: "22"
+        job: "{{ directory }}/voetbalpoules uitslag"
+  
+    - name: Install wedstrijd stand cron
+      ansible.builtin.cron:
+        name: "Wedstrijd stand"
+        minute: "20"
+        hour: "22"
+        job: "{{ directory }}/voetbalpoules stand"
+
+#    - name: Install wedstrijd voorspellingen vooraf cron
+#      ansible.builtin.cron:
+#        name: "Wedstrijd voorspellingen vooraf"
+#        minute: "30"
+#        hour: "10,13,16,19"
+#        job: "{{ directory }}/voetbalpoules voorspelling"
+#
+#    - name: Install wedstrijd voorspellingen definitief cron
+#      ansible.builtin.cron:
+#        name: "Wedstrijd voorspellingen definitief"
+#        minute: "0"
+#        hour: "11,14,17,20"
+#        job: "{{ directory }}/voetbalpoules voorspelling"
+#
+#    - name: Install wedstrijd uitslag cron
+#      ansible.builtin.cron:
+#        name: "Wedstrijd uitslag"
+#        minute: "15"
+#        hour: "13,16,19,22"
+#        job: "{{ directory }}/voetbalpoules uitslag"
+#  
+#    - name: Install wedstrijd stand cron
+#      ansible.builtin.cron:
+#        name: "Wedstrijd stand"
+#        minute: "20"
+#        hour: "13,16,19,22"
+#        job: "{{ directory }}/voetbalpoules stand"
