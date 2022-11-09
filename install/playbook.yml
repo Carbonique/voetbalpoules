@@ -1,7 +1,9 @@
 - hosts: all
 
   vars:
-    binary_url: "https://github.com/Carbonique/voetbalpoules/releases/download/0.0.2/voetbalpoules-0.0.2-linux-arm64.tar.gz"
+    version: "0.0.3"
+    arch: "arm64"
+    binary_url: "https://github.com/Carbonique/voetbalpoules/releases/download/{{ version }}/voetbalpoules-{{ version }}-linux-{{ arch }}.tar.gz"
     directory: "/home/{{ user }}/voetbalpoules"
 
   tasks:
