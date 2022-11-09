@@ -48,6 +48,7 @@ func (bot *Bot) verzend(b bericht) {
 
 }
 
+//StuurStand sends the ranking
 func (bot *Bot) StuurStand(deelnemers []voetbalpoules.Deelnemer) {
 
 	bericht := newStandBericht(deelnemers)
@@ -67,6 +68,7 @@ func newStandBericht(deelnemers []voetbalpoules.Deelnemer) bericht {
 	return b
 }
 
+//StuurUitslag sends a message for an upcoming match
 func (bot *Bot) StuurVoorspelling(vw voetbalpoules.VoorspeldeWedstrijd, voetbalpoulesBaseUrl string) {
 
 	bericht := newVoorspellingBericht(vw, voetbalpoulesBaseUrl)
@@ -82,6 +84,7 @@ func newVoorspellingBericht(vw voetbalpoules.VoorspeldeWedstrijd, voetbalpoulesB
 	return b
 }
 
+//StuurUitslag sends a message for a match played
 func (bot *Bot) StuurUitslag(vw voetbalpoules.VoorspeldeWedstrijd) {
 
 	bericht := newUitslagBericht(vw)
