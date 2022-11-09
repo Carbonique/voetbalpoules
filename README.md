@@ -14,20 +14,27 @@ Sit back and enjoy the show!
 
 ## Usage
 
-1. Pass configuration as described in [Passing configuration](#passing-configuration)
-2. 
+1. Install either the Docker container or the Go binary
+2. Pass configuration as described in [Passing configuration](#passing-configuration)
+3. Run the application from the CLI:
+ 
+docker run: e.g: (assuming the .env file is used for configuration) `docker run -it --env-file=./.env ghcr.io/carbonique/voetbalpoules:latest stand`
+
+Or 
+
+`voetbalpoules stand`
 
 ### Passing configuration
 
 Different possibilities exist for passing configuration:
 
-| Variable     | Description                   | Default                  | Instructions                                                                                                                                              |   |
-|--------------|-------------------------------|--------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|---|
-| `BASE_URL`   | Voetbalpoules                 | https://voetbalpoules.nl |                                                                                                                                                           |   |
-| `TOKEN`      | Telegram chat token           | None                     | [link](https://stackoverflow.com/questions/32423837/telegram-bot-how-to-get-a-group-chat-id)                                                              |   |
-| `CHAT`       | Telegram chat id              | None                     | [link](https://stackoverflow.com/questions/32423837/telegram-bot-how-to-get-a-group-chat-id)                                                              |   |
-| `COMPETITIE` | Voetbalpoules competitie name | None                     | 1. Go to https://www.voetbalpoules.nl/wedstrijd/index 2. Select the competition you want 3. `COMPETITIE` is the part in the url after `/wedstrijd/index/` |   |
-| `POOL_ID`    | Voetbalpoules pool id         | None                     | 1. Go to https://www.voetbalpoules.nl/stand/poules 2. Select the pool you want 3. `POOL` is the integer in the url after `/stand/poules/`                 |   |
+| Variable     | Description                   | Default                  | Instructions                                                                                                                                              |
+|--------------|-------------------------------|--------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `BASE_URL`   | Voetbalpoules                 | https://voetbalpoules.nl |                                                                                                                                                           |
+| `TOKEN`      | Telegram chat token           | None                     | [link](https://stackoverflow.com/questions/32423837/telegram-bot-how-to-get-a-group-chat-id)                                                              |
+| `CHAT`       | Telegram chat id              | None                     | [link](https://stackoverflow.com/questions/32423837/telegram-bot-how-to-get-a-group-chat-id)                                                              |
+| `COMPETITIE` | Voetbalpoules competitie name | None                     | 1. Go to https://www.voetbalpoules.nl/wedstrijd/index 2. Select the competition you want 3. `COMPETITIE` is the part in the url after `/wedstrijd/index/` |
+| `POOL_ID`    | Voetbalpoules pool id         | None                     | 1. Go to https://www.voetbalpoules.nl/stand/poules 2. Select the pool you want 3. `POOL` is the integer in the url after `/stand/poules/`                 |
 
 #### 1. Env file
 
@@ -45,7 +52,7 @@ Set Environment variables in Docker on in the local shell
 
 Flags take precedence over all environment variables.
 
-Run `--help` forr more information.
+Run `--help` for more information.
 
 ## Technical
 
