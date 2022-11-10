@@ -129,8 +129,8 @@ func newVoorspellingRij(e *colly.HTMLElement) (voorspellingRij, error) {
 func newVoorspelling(competitie string, baseDate time.Time, vRij ...voorspellingRij) (Voorspelling, error) {
 
 	v := Voorspelling{}
-	v.ThuisTeam = vRij[0].thuisTeam()
-	v.UitTeam = vRij[0].uitTeam()
+	v.ThuisTeam = vRij[0].team(2)
+	v.UitTeam = vRij[0].team(3)
 
 	log.Infof("Getting voorspelling %s - %s", v.ThuisTeam, v.UitTeam)
 
@@ -140,90 +140,62 @@ func newVoorspelling(competitie string, baseDate time.Time, vRij ...voorspelling
 	}
 	v.Datum = datum
 
-	v.DoelpuntenThuis = vRij[0].doelpuntenThuis()
-	v.DoelpuntenUit = vRij[0].doelpuntenUit()
+	v.DoelpuntenThuis, v.DoelpuntenUit = vRij[0].doelpunten(4)
 
 	v.Wvdw = vRij[0].wvdw()
 	if len(vRij) > 1 {
-		v.ThuisDoelpuntenMaker = vRij[1].thuisDoelpuntenMaker()
-		v.UitDoelpuntenMaker = vRij[1].uitDoelpuntenMaker()
+		v.ThuisDoelpuntenMaker = vRij[1].doelpuntenMaker(2)
+		v.UitDoelpuntenMaker = vRij[1].doelpuntenMaker(3)
 	}
 
 	return v, nil
 
 }
 
-func (r *voorspellingRij) thuisTeam() string {
+func (r *voorspellingRij) team(cel int) string {
 	re, err := regexp.Compile(`\((.*?)\)`)
 	if err != nil {
 		log.Fatal(err)
 	}
-	tekst := r.ChildText("td:nth-child(2) .vp-team")
+
+	tekst := r.ChildText(fmt.Sprintf("td:nth-child(%d) .vp-team", cel))
 
 	team := re.ReplaceAllString(tekst, " ")
 
 	return strings.TrimSpace(team)
 }
 
-func (r *voorspellingRij) uitTeam() string {
-	re, err := regexp.Compile(`\((.*?)\)`)
-	if err != nil {
-		log.Fatal(err)
-	}
-	tekst := r.ChildText("td:nth-child(3) .vp-team")
-
-	team := re.ReplaceAllString(tekst, " ")
-
-	return strings.TrimSpace(team)
-}
-
-func (r *voorspellingRij) thuisDoelpuntenMaker() *string {
-	d := r.ChildText("td:nth-child(2)")
-
+func (r *voorspellingRij) doelpuntenMaker(cel int) *string {
+	d := r.ChildText(fmt.Sprintf("td:nth-child(%d)", cel))
 	return &d
 }
 
-func (r *voorspellingRij) uitDoelpuntenMaker() *string {
-	d := r.ChildText("td:nth-child(3)")
-	return &d
-}
-
-func (r *voorspellingRij) doelpuntenThuis() *int {
-	rawTekst := r.ChildText("td:nth-child(4)")
-	if rawTekst == "-" {
-		return nil
-	}
-	if rawTekst == "" {
-		return nil
-	}
-
-	sanitizedTekst := strings.TrimSpace(strings.ReplaceAll(rawTekst, r.ChildText(".vp-uitslag"), ""))
-	stringGoals := strings.TrimSpace(strings.Split(sanitizedTekst, "-")[0])
-	i, err := strconv.Atoi(stringGoals)
-	if err != nil {
-		log.Panic()
-	}
-	return &i
-}
-
-func (r *voorspellingRij) doelpuntenUit() *int {
-	rawTekst := r.ChildText("td:nth-child(4)")
-
-	if rawTekst == "-" {
-		return nil
-	}
+func (r *voorspellingRij) doelpunten(cel int) (*int, *int) {
+	rawTekst := r.ChildText(fmt.Sprintf("td:nth-child(%d)", cel))
 
 	if rawTekst == "" {
-		return nil
+		return nil, nil
 	}
 
+	//AVerwijder .vp-uitslag (staat in zelfde cel als de voorspelling)
 	sanitizedTekst := strings.TrimSpace(strings.ReplaceAll(rawTekst, r.ChildText(".vp-uitslag"), ""))
-	stringGoals := strings.TrimSpace(strings.Split(sanitizedTekst, "-")[1])
-	i, err := strconv.Atoi(stringGoals)
-	if err != nil {
-		log.Panic()
+	if sanitizedTekst == "-" {
+		return nil, nil
 	}
-	return &i
+
+	thuisDoelpunten := strings.TrimSpace(strings.Split(sanitizedTekst, "-")[0])
+	t, err := strconv.Atoi(thuisDoelpunten)
+	if err != nil {
+		return nil, nil
+	}
+
+	uitDoelpunten := strings.TrimSpace(strings.Split(sanitizedTekst, "-")[1])
+	u, err := strconv.Atoi(uitDoelpunten)
+	if err != nil {
+		return nil, nil
+	}
+
+	return &t, &u
 }
 
 func (r *voorspellingRij) wvdw() bool {

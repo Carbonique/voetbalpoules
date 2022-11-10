@@ -68,18 +68,25 @@ func newStandBericht(deelnemers []voetbalpoules.Deelnemer) bericht {
 	return b
 }
 
-//StuurUitslag sends a message for an upcoming match
-func (bot *Bot) StuurVoorspelling(vw voetbalpoules.VoorspeldeWedstrijd, voetbalpoulesBaseUrl string) {
+//StuurVoorspellingVoorlopig sends a message containing predictions formatted as definitive
+func (bot *Bot) StuurVoorspellingVoorlopig(vw voetbalpoules.VoorspeldeWedstrijd, voetbalpoulesBaseUrl string) {
 
-	bericht := newVoorspellingBericht(vw, voetbalpoulesBaseUrl)
+	bericht := newVoorspellingBericht(vw, voetbalpoulesBaseUrl, true, "Voorspelling vooraf")
 	bot.verzend(bericht)
 }
 
-func newVoorspellingBericht(vw voetbalpoules.VoorspeldeWedstrijd, voetbalpoulesBaseUrl string) bericht {
+//StuurVoorspellingDefinitief sends a message containing predictions formatted as definitive
+func (bot *Bot) StuurVoorspellingDefinitief(vw voetbalpoules.VoorspeldeWedstrijd, voetbalpoulesBaseUrl string) {
+
+	bericht := newVoorspellingBericht(vw, voetbalpoulesBaseUrl, false, "Voorspelling definitief")
+	bot.verzend(bericht)
+}
+
+func newVoorspellingBericht(vw voetbalpoules.VoorspeldeWedstrijd, voetbalpoulesBaseUrl string, deelnemerAlsHyperlink bool, kop string) bericht {
 	b := bericht{}
 
-	b.titel = voorspellingBerichtTitel(vw.Wedstrijd)
-	b.inhoud = voorspellingenBericht(vw, true, voetbalpoulesBaseUrl)
+	b.titel = voorspellingBerichtTitel(vw.Wedstrijd, kop)
+	b.inhoud = voorspellingenBericht(vw, deelnemerAlsHyperlink, voetbalpoulesBaseUrl)
 
 	return b
 }
@@ -117,7 +124,7 @@ func uitslagBerichtTitel(w voetbalpoules.Wedstrijd) string {
 
 }
 
-func voorspellingBerichtTitel(w voetbalpoules.Wedstrijd) string {
+func voorspellingBerichtTitel(w voetbalpoules.Wedstrijd, kop string) string {
 	uur := strconv.Itoa(w.Datum.Hour())
 	minuut := strconv.Itoa(w.Datum.Minute())
 
@@ -125,7 +132,7 @@ func voorspellingBerichtTitel(w voetbalpoules.Wedstrijd) string {
 		minuut = minuut + "0"
 	}
 
-	titel := fmt.Sprintf("*Voorspelling:\n%s - %s %s:%s*\n", w.ThuisTeam, w.UitTeam, uur, minuut)
+	titel := fmt.Sprintf("*%s:\n%s - %s %s:%s*\n", kop, w.ThuisTeam, w.UitTeam, uur, minuut)
 
 	return titel
 

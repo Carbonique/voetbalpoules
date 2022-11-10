@@ -132,7 +132,7 @@ func TestGetVoorspellingen(t *testing.T) {
 		},
 		{
 			baseTime:    time.Date(2022, 7, 8, 20, 30, 0, 0, time.Local),
-			description: "Wedstrijd zonder ingevulde voorspelling",
+			description: "Wedstrijd zonder ingevulde voorspelling, maar met uitslag",
 			w:           LandGLandH,
 			expected:    VoorspellingLandGLandH,
 		},
@@ -565,7 +565,10 @@ func newVoorspellingenTestServer() *httptest.Server {
 	</div>
 	</td>
 	<td class="nowrap">
-		-
+	-
+	<div class="vp-uitslag">
+		2 - 0
+	</div>
 	</td>
 	<td>
 	

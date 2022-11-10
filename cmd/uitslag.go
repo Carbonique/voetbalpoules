@@ -13,6 +13,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var timeUitslag int
+
 // uitslagenCmd represents the uitslagen command
 var uitslagCmd = &cobra.Command{
 	Use:   "uitslag",
@@ -22,7 +24,7 @@ var uitslagCmd = &cobra.Command{
 		client := voetbalpoules.NewClient(BASE_URL)
 		bot := voetbalpoulestelegram.NewBot(TOKEN, CHAT)
 		t1 := time.Now()
-		t2 := t1.Add(time.Minute * -35)
+		t2 := t1.Add(time.Minute * time.Duration(timeUitslag))
 		vw, _ := client.GetPoolVoorspelling(t1, t2, POOL_ID, COMPETITIE)
 
 		for _, vw2 := range vw {
@@ -33,5 +35,6 @@ var uitslagCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(uitslagCmd)
+	uitslagCmd.PersistentFlags().IntVar(&timeUitslag, "time", -120, "Time in mimutes from now to look for uitslagen (counting from current time)")
 
 }
