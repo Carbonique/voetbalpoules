@@ -39,7 +39,7 @@
         job: "{{ item.job }}"
       loop:
         - { name: 'Wedstrijd voorspellingen vooraf', minute: 30, hour: 19, job: '{{ directory }}/voetbalpoules voorspelling'}
-        - { name: 'Wedstrijd voorspellingen definitief', minute: 0, hour: 20, job: 'sleep 10 {{ directory }}/voetbalpoules voorspelling'}
+        - { name: 'Wedstrijd voorspellingen definitief', minute: 0, hour: 20, job: 'sleep 10 && {{ directory }}/voetbalpoules voorspelling'}
         - { name: 'Wedstrijd uitslag', minute: 15, hour: 22, job: '{{ directory }}/voetbalpoules uitslag'}
         - { name: 'Wedstrijd stand', minute: 20, hour: 22, job: '{{ directory }}/voetbalpoules stand'}
 
