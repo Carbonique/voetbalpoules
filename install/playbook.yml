@@ -31,58 +31,26 @@
         dest: "{{ directory }}"
       when: env_file.stat.exists
 
-    - name: Install wedstrijd voorspellingen vooraf cron
+    - name: Setup cron
       ansible.builtin.cron:
-        name: "Wedstrijd voorspellingen vooraf"
-        minute: "30"
-        hour: "19"
-        job: "{{ directory }}/voetbalpoules voorspelling"
+        name: "{{ item.name }}"
+        minute: "{{ item.minute }}"
+        hour: "{{ item.hour }}"
+        job: "{{ item.job }}"
+      loop:
+        - { name: 'Wedstrijd voorspellingen vooraf', minute: 30, hour: 19, job: '{{ directory }}/voetbalpoules voorspelling'}
+        - { name: 'Wedstrijd voorspellingen definitief', minute: 0, hour: 20, job: 'sleep 10 {{ directory }}/voetbalpoules voorspelling'}
+        - { name: 'Wedstrijd uitslag', minute: 15, hour: 22, job: '{{ directory }}/voetbalpoules uitslag'}
+        - { name: 'Wedstrijd stand', minute: 20, hour: 22, job: '{{ directory }}/voetbalpoules stand'}
 
-    - name: Install wedstrijd voorspellingen definitief cron
-      ansible.builtin.cron:
-        name: "Wedstrijd voorspellingen definitief"
-        minute: "0"
-        hour: "20"
-        job: "sleep 10 {{ directory }}/voetbalpoules voorspelling"
-
-    - name: Install wedstrijd uitslag cron
-      ansible.builtin.cron:
-        name: "Wedstrijd uitslag"
-        minute: "15"
-        hour: "22"
-        job: "{{ directory }}/voetbalpoules uitslag"
-  
-    - name: Install wedstrijd stand cron
-      ansible.builtin.cron:
-        name: "Wedstrijd stand"
-        minute: "20"
-        hour: "22"
-        job: "{{ directory }}/voetbalpoules stand"
-
-#    - name: Install wedstrijd voorspellingen vooraf cron
+#    - name: Setup cron
 #      ansible.builtin.cron:
-#        name: "Wedstrijd voorspellingen vooraf"
-#        minute: "30"
-#        hour: "10,13,16,19"
-#        job: "{{ directory }}/voetbalpoules voorspelling"
-#
-#    - name: Install wedstrijd voorspellingen definitief cron
-#      ansible.builtin.cron:
-#        name: "Wedstrijd voorspellingen definitief"
-#        minute: "0"
-#        hour: "11,14,17,20"
-#        job: "{{ directory }}/voetbalpoules voorspelling"
-#
-#    - name: Install wedstrijd uitslag cron
-#      ansible.builtin.cron:
-#        name: "Wedstrijd uitslag"
-#        minute: "15"
-#        hour: "13,16,19,22"
-#        job: "{{ directory }}/voetbalpoules uitslag"
-#  
-#    - name: Install wedstrijd stand cron
-#      ansible.builtin.cron:
-#        name: "Wedstrijd stand"
-#        minute: "20"
-#        hour: "13,16,19,22"
-#        job: "{{ directory }}/voetbalpoules stand"
+#        name: "{{ item.name }}"
+#        minute: "{{ item.minute }}"
+#        hour: "{{ item.hour }}"
+#        job: "{{ item.job }}"
+#      loop:
+#        - { name: 'Wedstrijd voorspellingen vooraf', minute: 30, hour: '10,13,16,19', job: '{{ directory }}/voetbalpoules voorspelling'}
+#        - { name: 'Wedstrijd voorspellingen definitief', minute: 0, hour: '11,14,17,20', job: 'sleep 10 {{ directory }}/voetbalpoules voorspelling'}
+#        - { name: 'Wedstrijd uitslag', minute: 0, hour: '13,16,19,22', job: '{{ directory }}/voetbalpoules uitslag'}
+#        - { name: 'Wedstrijd stand', minute: 5, hour: '13,16,19,22', job: '{{ directory }}/voetbalpoules stand'}
