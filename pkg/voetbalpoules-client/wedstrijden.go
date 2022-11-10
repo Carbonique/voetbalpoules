@@ -128,8 +128,8 @@ func newWedstrijdRij(e *colly.HTMLElement) (wedstrijdRij, error) {
 func newWedstrijd(competitie string, vandaag time.Time, wRij ...wedstrijdRij) (Wedstrijd, error) {
 
 	w := Wedstrijd{}
-	w.ThuisTeam = wRij[0].thuisTeam()
-	w.UitTeam = wRij[0].uitTeam()
+	w.ThuisTeam = wRij[0].team(2)
+	w.UitTeam = wRij[0].team(3)
 
 	log.Infof("Getting wedstrijd %s - %s", w.ThuisTeam, w.UitTeam)
 
@@ -144,33 +144,21 @@ func newWedstrijd(competitie string, vandaag time.Time, wRij ...wedstrijdRij) (W
 
 	w.Wvdw = wRij[0].wvdw()
 	if len(wRij) > 1 {
-		w.ThuisDoelpuntenMaker = wRij[1].thuisDoelpuntenMaker()
-		w.UitDoelpuntenMaker = wRij[1].uitDoelpuntenMaker()
+		w.ThuisDoelpuntenMaker = wRij[1].doelpuntenMaker(2)
+		w.UitDoelpuntenMaker = wRij[1].doelpuntenMaker(3)
 	}
 
 	return w, nil
 
 }
 
-func (r *wedstrijdRij) thuisTeam() string {
-	t := r.ChildText("td:nth-child(2) .vp-team")
-
+func (r *wedstrijdRij) team(cel int) string {
+	t := r.ChildText(fmt.Sprintf("td:nth-child(%d) .vp-team", cel))
 	return t
 }
 
-func (r *wedstrijdRij) uitTeam() string {
-	t := r.ChildText("td:nth-child(3) .vp-team")
-	return t
-}
-
-func (r *wedstrijdRij) thuisDoelpuntenMaker() string {
-	d := r.ChildText("td:nth-child(2)")
-
-	return d
-}
-
-func (r *wedstrijdRij) uitDoelpuntenMaker() string {
-	d := r.ChildText("td:nth-child(3)")
+func (r *wedstrijdRij) doelpuntenMaker(cel int) string {
+	d := r.ChildText(fmt.Sprintf("td:nth-child(%d)", cel))
 	return d
 }
 

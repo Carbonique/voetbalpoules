@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var timeVoorspelling int
+
 // voorspellingenCmd represents the voorspellingen command
 var voorspellingCmd = &cobra.Command{
 	Use:   "voorspelling",
@@ -21,25 +23,28 @@ var voorspellingCmd = &cobra.Command{
 		client := voetbalpoules.NewClient(BASE_URL)
 		bot := voetbalpoulestelegram.NewBot(TOKEN, CHAT)
 		t1 := time.Now()
-		t2 := t1.Add(time.Minute * 65)
+		t2 := t1.Add(time.Minute * time.Duration(timeVoorspelling))
 		vw, _ := client.GetPoolVoorspelling(t1, t2, POOL_ID, COMPETITIE)
 
 		for _, vw2 := range vw {
-			bot.StuurVoorspelling(vw2, BASE_URL)
+			switch {
+			case t1.Before(t2):
+				bot.StuurVoorspellingVoorlopig(vw2, BASE_URL)
+
+			case t1.After(t2):
+				bot.StuurVoorspellingDefinitief(vw2, BASE_URL)
+
+			case t1.Equal(t2):
+				bot.StuurVoorspellingDefinitief(vw2, BASE_URL)
+
+			}
+
 		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(voorspellingCmd)
+	voorspellingCmd.PersistentFlags().IntVar(&timeVoorspelling, "time", 45, "Time in minutes from now to look for voorspellingen (counting from current time)")
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// voorspellingenCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// voorspellingenCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

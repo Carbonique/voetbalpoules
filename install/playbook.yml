@@ -43,7 +43,7 @@
         name: "Wedstrijd voorspellingen definitief"
         minute: "0"
         hour: "20"
-        job: "{{ directory }}/voetbalpoules voorspelling"
+        job: "sleep 10 {{ directory }}/voetbalpoules voorspelling"
 
     - name: Install wedstrijd uitslag cron
       ansible.builtin.cron:

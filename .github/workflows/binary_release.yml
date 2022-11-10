@@ -14,7 +14,15 @@ jobs:
         goos: [linux]
         goarch: [amd64, arm64]
     steps:
+
+    - name: Get latest tag
+      id: vars
+      run: echo ::set-output name=tag::${GITHUB_REF:10}
+
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ steps.vars.outputs.tag }}
+        
     - uses: wangyoucao577/go-release-action@v1.32
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -22,3 +30,4 @@ jobs:
         goarch: ${{ matrix.goarch }}
         binary_name: "voetbalpoules"
         extra_files: LICENSE README.md
+        ldflags: -X "github.com/Carbonique/voetbalpoules/cmd.Version=${{ steps.vars.outputs.tag }}"
