@@ -28,7 +28,6 @@ func newDeelnemer(d deelnemerRij) (Deelnemer, error) {
 	if err != nil {
 		return Deelnemer{}, err
 	}
-
 	puntenRonde, err := d.puntenRonde()
 	if err != nil {
 		return Deelnemer{}, err
@@ -70,9 +69,8 @@ func (d deelnemerRij) punten() (int, error) {
 	puntenTekst := d.ChildText("td.punten")
 	strafPunten := d.ChildText("td.punten div")
 	puntenZonderPunt, err := strconv.Atoi(strings.ReplaceAll(puntenTekst, strafPunten, ""))
-
 	if err != nil {
-		return 0, err
+		return 0, nil
 	}
 
 	return puntenZonderPunt, nil

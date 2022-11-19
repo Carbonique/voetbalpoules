@@ -18,7 +18,6 @@ type Pool struct {
 //GetDeelnemers fetches the deelnemers for a pool
 func (p *poolService) getDeelnemers(id int, competitie string) []Deelnemer {
 	deelnemers := []Deelnemer{}
-
 	p.client.OnHTML("table.stand", func(stand *colly.HTMLElement) {
 		stand.ForEach("tr:not(:first-child)", func(_ int, rij *colly.HTMLElement) {
 			dRij, err := newDeelnemerRij(rij)

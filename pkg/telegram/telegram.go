@@ -2,6 +2,7 @@ package voetbalpoulestelegram
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strconv"
 	"time"
@@ -62,7 +63,10 @@ func newStandBericht(deelnemers []voetbalpoules.Deelnemer) bericht {
 	b.titel = fmt.Sprintf("*Stand %s - %s:*\n", dag, maand)
 
 	for i, d := range deelnemers {
-		stand := fmt.Sprintf("%d. %s %d (+%d) \n", i+1, d.Naam, d.Punten, d.PuntenRonde)
+		reg := regexp.MustCompile(`_`)
+		sanitizedNaam := reg.ReplaceAllString(d.Naam, " ")
+
+		stand := fmt.Sprintf("%d. %s %d (+%d) \n", i+1, sanitizedNaam, d.Punten, d.PuntenRonde)
 		b.inhoud = b.inhoud + stand
 	}
 	return b
@@ -158,7 +162,9 @@ func voorspellingenToString(vw voetbalpoules.VoorspeldeWedstrijd, volgorde []voe
 		} else {
 			uitslag = fmt.Sprintf("(%d - %d)", *m[d].DoelpuntenThuis, *m[d].DoelpuntenUit)
 		}
-		deelnemer := d.Naam
+
+		reg := regexp.MustCompile(`_`)
+		deelnemer := reg.ReplaceAllString(d.Naam, " ")
 
 		if deelnemerAlsHyperlink {
 			deelnemer = fmt.Sprintf("[%s](%s/deelnemer/%d/voorspellingen/%s)", d.Naam, voetbalpoulesBaseUrl, d.ID, vw.Wedstrijd.Competitie)
