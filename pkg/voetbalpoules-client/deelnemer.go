@@ -68,7 +68,11 @@ func isDeelnemerRij(e *colly.HTMLElement) (b bool) {
 func (d deelnemerRij) punten() (int, error) {
 	puntenTekst := d.ChildText("td.punten")
 	strafPunten := d.ChildText("td.punten div")
-	puntenZonderPunt, err := strconv.Atoi(strings.ReplaceAll(puntenTekst, strafPunten, ""))
+
+	punten := strings.ReplaceAll(strings.ReplaceAll(puntenTekst, strafPunten, ""), "\n", "")
+
+	puntenZonderPunt, err := strconv.Atoi(strings.TrimSpace(punten))
+
 	if err != nil {
 		return 0, nil
 	}
