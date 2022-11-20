@@ -47,6 +47,15 @@ func NewClient(url string) *Client {
 
 }
 
+//GetWedstrijden returns wedstrijden for a timerange
+func (c Client) GetWedstrijden(t1 time.Time, t2 time.Time, poolid int, competitie string) ([]Wedstrijd, error) {
+	w, err := c.wedstrijden.get(competitie, t1, t2)
+	if err != nil {
+		return []Wedstrijd{}, err
+	}
+	return w, nil
+}
+
 //GetStand returns a sorted ranking for a pool
 func (c Client) GetStand(poolID int, competitie string) []Deelnemer {
 	return c.pool.getStand(poolID, competitie)
