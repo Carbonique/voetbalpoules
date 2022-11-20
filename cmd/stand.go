@@ -5,8 +5,9 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	voetbalpoulestelegram "github.com/Carbonique/voetbalpoules/pkg/telegram"
 	voetbalpoules "github.com/Carbonique/voetbalpoules/pkg/voetbalpoules-client"
@@ -32,9 +33,9 @@ var standCmd = &cobra.Command{
 			t2 := t1.Add(time.Minute * time.Duration(timeStand))
 
 			w, _ := client.GetWedstrijden(t1, t2, POOL_ID, COMPETITIE)
-			fmt.Printf("w: %v\n", w)
 
 			if len(w) == 0 {
+				log.Info("No wedstrijd found in timerange")
 				return
 			}
 
