@@ -122,7 +122,7 @@ func uitslagBerichtTitel(w voetbalpoules.Wedstrijd) string {
 	titel := fmt.Sprintf("*Uitslag:\n%s - %s (%s) %s:%s*\n", w.ThuisTeam, w.UitTeam, w.Uitslag, uur, minuut)
 
 	if w.Wvdw {
-		titel = fmt.Sprintf("%s (%s - %s \n", titel, w.ThuisDoelpuntenMaker, w.UitDoelpuntenMaker)
+		titel = fmt.Sprintf("%s (%s - %s) \n", titel, w.ThuisDoelpuntenMaker, w.UitDoelpuntenMaker)
 	}
 	return titel
 
@@ -181,7 +181,7 @@ func voorspellingenToString(vw voetbalpoules.VoorspeldeWedstrijd, volgorde []voe
 				thuisDoelpuntenMaker = *m[d].ThuisDoelpuntenMaker
 				uitDoelpuntenMaker = *m[d].UitDoelpuntenMaker
 			}
-			doelpuntenMakers = fmt.Sprintf("(%s - %s", thuisDoelpuntenMaker, uitDoelpuntenMaker)
+			doelpuntenMakers = fmt.Sprintf("(%s - %s)", thuisDoelpuntenMaker, uitDoelpuntenMaker)
 		}
 
 		voorspellingTekst := fmt.Sprintf("%s %s %s", deelnemer, uitslag, doelpuntenMakers)
